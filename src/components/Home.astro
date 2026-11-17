@@ -6,7 +6,7 @@ import CaseArt from './CaseArt.astro';
 import Metrics from './Metrics.astro';
 import DecisionCard from './DecisionCard.astro';
 import { decisions } from '../i18n/decisions';
-import { dict, paths, EMAIL, GITHUB, type Lang, type ConsoleEndpoint } from '../i18n';
+import { dict, paths, EMAIL, GITHUB, LINKEDIN, type Lang, type ConsoleEndpoint } from '../i18n';
 import { getCases, getSide, blockClass } from '../lib/cases';
 
 interface Props { lang: Lang; }
@@ -273,7 +273,8 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
       <div class="contact-row">
         <button class="btn alt" type="button" data-copy={EMAIL} data-done={t.copied} hidden>{t.copy}</button>
         <a class="btn alt" href={GITHUB} rel="me noopener">{t.github} <span class="arr" aria-hidden="true">↗</span></a>
-        {/* TODO(usuario): LinkedIn y CV en PDF cuando estén disponibles. */}
+        <a class="btn alt" href={LINKEDIN} rel="me noopener">LinkedIn <span class="arr" aria-hidden="true">↗</span></a>
+        {/* TODO(usuario): CV en PDF cuando esté actualizado. */}
       </div>
     </div>
   </section>

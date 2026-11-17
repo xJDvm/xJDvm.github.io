@@ -3,8 +3,8 @@ export const LANGS: Lang[] = ['es', 'en'];
 
 export const EMAIL = 'juandiegovaldesm03@gmail.com';
 export const GITHUB = 'https://github.com/xJDvm';
-// TODO(usuario): añadir cuando existan.
-// export const LINKEDIN = '';
+export const LINKEDIN = 'https://www.linkedin.com/in/juan-diego-vald%C3%A9s-637981278/';
+// TODO(usuario): añadir el CV en PDF cuando esté actualizado.
 // export const CV_URL = '';
 
 /* Experiencia indicada por el usuario: 4 años programando y 2,5 años con IA (nov 2026).
