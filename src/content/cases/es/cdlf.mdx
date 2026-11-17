@@ -1,0 +1,70 @@
+---
+key: cdlf
+lang: es
+order: 4
+title: CDLF · Clínica de la Familia
+short: CDLF
+label: 04 — Salud
+period: oct — nov 2026
+summary: Atención por Messenger e Instagram con IA, una suite web interna y una memoria compartida de pacientes para los directores médicos (doctors-ai).
+problem: Una clínica que atiende por redes sociales necesita responder rápido sin que la IA conteste lo que no le corresponde, sin duplicar respuestas cuando llegan ráfagas de mensajes y con traspaso a una persona cuando hace falta.
+decision: Diseño por eventos con garantías explícitas. El ingreso verifica la firma HMAC y solo responde 200 cuando SQS confirmó. Hay una cola FIFO por paciente, idempotencia en base de datos, un debounce de 4 s para ráfagas y una «puerta clínica» antes de que conteste la IA.
+role: "Autor único de los cuatro repositorios: contact center, suite, doctors-ai e inventario."
+result: En producción y funcionando, con atención de punta a punta para pacientes por Messenger e Instagram. Incluye traspaso a personal, base de conocimiento administrable, auditoría, métricas y un monitor de pacientes para los directores médicos.
+stack: [Node 20 (ESM), PostgreSQL, React, Vite, AWS SAM, Lambda, API Gateway, SQS FIFO, Aurora, Meta Graph API, MCP, OpenAI, Gemini, Docker Compose]
+sticker: { value: 'En producción', label: 'atención real por Messenger e Instagram' }
+tag: salud
+footprint:
+  - { value: '146', label: 'commits en 5 repos: 64 + 37 + 35 + 2 + 8 del paraguas (autor único)' }
+  - { value: '21', label: 'migraciones SQL' }
+  - { value: '29', label: 'tablas (10 + 9 + 10)' }
+  - { value: '16', label: 'herramientas MCP en el contact center' }
+  - { value: '176', label: 'casos de prueba en la variante AWS (90 + 86)' }
+color: red
+---
+
+## Contexto
+
+Para CDLF (Clínica de la Familia) construí tres productos que comparten base:
+
+- **Contact center:** atención por Messenger e Instagram con IA, base de conocimiento y traspaso a personal humano.
+- **Suite:** la aplicación web interna, con usuarios, roles, sesiones, auditoría, métricas, base de conocimiento y preguntas abiertas administrables.
+- **doctors-ai:** memoria compartida de pacientes para los directores médicos, con Google Drive como fuente, proveedores de IA intercambiables (OpenAI o Gemini) y un monitor de pacientes en la Suite (línea de tiempo, laboratorios con gráficas, signos vitales y alertas). El monitor se diseñó y probó con datos sintéticos.
+
+Cada producto tiene dos variantes: `local/`, con Docker Compose, y `aws/`, la plantilla SAM con la que corre en producción.
+
+## Arquitectura del contact center (variante AWS)
+
+```text
+Meta (webhook)
+  → Lambda de ingreso: verifica firma HMAC; 200 solo si SQS confirmó
+  → SQS FIFO agrupada por paciente
+  → worker: recibos e idempotencia en Aurora
+  → aviso con 4 s de retraso (debounce de ráfagas)
+  → responder: ¿allowlist? ¿lo atiende un humano? ¿hay un mensaje más nuevo?
+              ¿pasa la puerta clínica? → IA + base de conocimiento
+  → Meta
+```
+
+- **Nunca perder un mensaje:** el webhook solo confirma a Meta cuando el mensaje está en la cola.
+- **Nunca responder dos veces:** idempotencia y un candado por conversación con vencimiento.
+- **No responder a medias:** si la persona sigue escribiendo, el debounce espera y el responder comprueba que no haya un mensaje más nuevo.
+- **Puerta clínica:** un filtro explícito, en código, antes de que la IA conteste.
+- **Suite:** cookies HttpOnly y SameSite=Strict con CSRF de doble envío entre subdominios hermanos.
+
+Node 20 con ESM y `node:http`, sin frameworks. La dependencia principal es `pg`.
+
+## Costo y disponibilidad, por escrito
+
+- **Serverless frente a un solo servidor.** El primer análisis comparó un servidor único (Lightsail), EC2, DigitalOcean, Hetzner, Azure y AWS por servicios. Se eligió AWS serverless por disponibilidad, y el propio modelo de costos lo deja escrito: cuesta unos USD 25 más al mes que el servidor único (estimado, precio de lista), casi todo por el mínimo de Aurora. A cambio, no hay un servidor único que pueda caerse, cada pieza escala por separado y no hay sistema operativo que parchear. Para no quedar atado al proveedor, la base de datos y la cola van detrás de adaptadores.
+- **Techo de costo en Aurora.** Mínimo de 0,5 ACU sin pausa, para que el contact center no espere a que la base despierte, y máximo de 2 ACU como techo a revisar con la carga medida, con alarma al llegar al máximo. El entorno de pruebas sí se pausa a los 10 minutos.
+- **Retención de 30 días** para el texto de las conversaciones, con purga programada y solo métricas agregadas después. El MCP es de solo lectura y agregado, sin búsqueda libre en transcripciones. Menos datos de salud expuestos, a cambio de perder el detalle histórico.
+
+## En producción
+
+- En producción, atendiendo a pacientes reales por Messenger e Instagram, con traspaso a personal cuando hace falta.
+- Casos de prueba en cada producto, modos de fallo documentados, modelo de costos, notas de seguridad clínica y scripts de cadena de suministro y de verificación de que no queden datos de demo.
+
+## Lo que aprendí
+
+En salud, lo difícil no es que la IA conteste sino decidir **cuándo no debe hacerlo**, y que esa decisión quede en código verificable y no en un prompt.

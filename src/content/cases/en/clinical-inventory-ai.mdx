@@ -1,0 +1,37 @@
+---
+key: clinical-inventory-ai
+lang: en
+order: 1
+title: Clinical inventory with local AI
+short: Thesis · clinical inventory
+label: UJAP thesis
+period: Jun — Sep 2025
+summary: My thesis project. It’s an inventory of medicines and supplies for a clinic, with a local LLM that turns natural-language notes into restocking parameters.
+problem: A clinical inventory has several warehouses, roles and permissions, and restocking notes are written as free text, not structured fields.
+decision: Run the model locally with Ollama (qwen2.5:7b-instruct) behind a FastAPI microservice. Data never leaves the server and the NestJS backend only receives structured parameters.
+role: Sole author of the backend, the frontend and the AI microservice.
+result: A working end-to-end system with per-role and per-warehouse permissions, transfers between warehouses, inventory history, restocking and user management.
+stack: [NestJS, PostgreSQL, Docker Compose, Python, FastAPI, Ollama, Next.js 15, React 19]
+sticker: { value: 'Local', label: 'LLM via Ollama, no external API' }
+tag: thesis
+kind: academic
+color: invert
+---
+
+## Context
+
+My thesis was a clinical inventory system covering medicines, supplies, orders, quotes, patients and warehouses. The CRUD wasn’t the interesting part. Two other things were: **fine-grained permissions** and **free text**.
+
+## Architecture
+
+- **NestJS backend** with modules for inventory, medicines, medical supplies, orders, patients, quotes, warehouses, categories and roles/permissions, on PostgreSQL and Docker Compose.
+- **Python AI microservice (FastAPI + Ollama):** takes a free-text note (an illustrative example: *“out of size M gloves, order for two weeks”*) and returns structured restocking parameters. The model is `qwen2.5:7b-instruct`, running locally.
+- **Next.js 15 / React 19 frontend** with per-warehouse roles and permissions in middleware and navigation, transfers, history and user management.
+
+## Why local AI
+
+In a clinical setting, sending text to an external API is not a decision to make by default. For extracting parameters from a short note, a local 7B model was enough, and the clinic’s information stays on its own server.
+
+## What I learned
+
+AI works better as a **translator into structure** than as a decision-maker. The model proposes parameters and the system, with its rules and permissions, decides.

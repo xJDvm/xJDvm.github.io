@@ -1,0 +1,37 @@
+---
+key: clinical-inventory-ai
+lang: es
+order: 1
+title: Inventario clínico con IA local
+short: Tesis · inventario clínico
+label: Tesis UJAP
+period: jun — sep 2025
+summary: Mi proyecto de tesis. Es un inventario de medicinas e insumos para una clínica, con un LLM local que convierte notas en lenguaje natural en parámetros de reabastecimiento.
+problem: Un inventario clínico tiene varios almacenes, roles y permisos, y las notas de reabastecimiento se escriben en texto libre, no en campos estructurados.
+decision: Correr el modelo en local con Ollama (qwen2.5:7b-instruct) detrás de un microservicio FastAPI. Los datos no salen del servidor y el backend NestJS solo recibe parámetros estructurados.
+role: Autor único del backend, el frontend y el microservicio de IA.
+result: Un sistema funcional de punta a punta, con permisos por rol y almacén, traslados entre almacenes, historial de inventario, reabastecimiento y gestión de usuarios.
+stack: [NestJS, PostgreSQL, Docker Compose, Python, FastAPI, Ollama, Next.js 15, React 19]
+sticker: { value: 'Local', label: 'LLM vía Ollama, sin API externa' }
+tag: tesis
+kind: academic
+color: invert
+---
+
+## Contexto
+
+La tesis fue un sistema de inventario clínico: medicinas, insumos, órdenes, cotizaciones, pacientes y almacenes. Lo interesante no era el CRUD, sino dos cosas: **permisos finos** y **texto libre**.
+
+## Arquitectura
+
+- **Backend NestJS** con módulos de inventario, medicinas, insumos médicos, órdenes, pacientes, cotizaciones, almacenes, categorías y roles/permisos, sobre PostgreSQL y Docker Compose.
+- **Microservicio de IA en Python (FastAPI + Ollama):** recibe una nota en texto libre (un ejemplo ilustrativo: *«faltan guantes talla M, pedir para dos semanas»*) y devuelve parámetros estructurados de reabastecimiento. El modelo es `qwen2.5:7b-instruct` corriendo en local.
+- **Frontend Next.js 15 / React 19** con roles y permisos por almacén en el middleware y en la navegación, traslados, historial y gestión de usuarios.
+
+## Por qué IA local
+
+En un contexto clínico, mandar texto a una API externa es una decisión que no debería tomarse por defecto. Para extraer parámetros de una nota corta, un modelo de 7B en local fue suficiente, y la información de la clínica se queda en su servidor.
+
+## Lo que aprendí
+
+Que la IA funcione mejor como **traductor a estructura** que como tomadora de decisiones. El modelo propone parámetros y el sistema, con sus reglas y permisos, decide.

@@ -1,0 +1,46 @@
+---
+key: sportapp
+lang: es
+order: 5
+title: SportApp
+short: SportApp
+label: 05 — Reservas deportivas
+period: may — jun 2026
+summary: Backend de una plataforma para reservar canchas deportivas desde el móvil y administrarlas desde un panel web.
+problem: Dos públicos con necesidades opuestas sobre el mismo dominio de reservas. Los clientes reservan desde el móvil y los complejos administran canchas, horarios, pagos, promociones y empleados.
+decision: Arquitectura hexagonal por módulos con un tipo Result (ok/err) y una jerarquía DomainError, y dos dominios de identidad separados, uno para clientes móviles y otro para usuarios y roles del panel.
+role: Autor del backend y del commit inicial del panel web. La app móvil la empezó otro desarrollador; yo hice la integración grande que la conectó con la API.
+result: Una plataforma funcional con API versionada /api/v1, 16 módulos hexagonales y 69 casos de uso, 38 tablas en PostgreSQL, auth con argon2 y JWT, y pruebas con Vitest y fast-check.
+stack: [TypeScript, Node, Express 5, PostgreSQL, Zod, argon2, JWT, Vitest, fast-check, Docker, React 19, Expo]
+sticker: { value: '2', label: 'dominios de identidad separados' }
+tag: full-stack
+footprint:
+  - { value: '16', label: 'módulos hexagonales' }
+  - { value: '69', label: 'casos de uso' }
+  - { value: '38', label: 'tablas PostgreSQL' }
+  - { value: '89', label: 'casos de prueba en Vitest' }
+  - { value: '64', label: 'propiedades fast-check' }
+color: surface
+---
+
+## Contexto
+
+SportApp es una plataforma de reserva de canchas (pádel, fútbol y otras) con tres piezas: backend, panel web para los complejos y app móvil para los clientes. Mi trabajo principal está en el **backend**.
+
+## Decisiones
+
+- **Hexagonal por módulos:** 16 módulos: auth, client-auth, authz, users, bookings, catalog, venues, scheduling, payments, promotions, reviews, search, media, audit, currency y admin. `createApp()` compone los adaptadores y `BookingRepository` es el puerto central del dominio.
+- **Errores como valores:** un tipo `Result` (`ok`/`err`) y una jerarquía `DomainError`. Los casos de uso no lanzan excepciones por reglas de negocio, devuelven un resultado que el adaptador HTTP traduce.
+- **Dos identidades:** el cliente que reserva desde el móvil y el empleado del complejo con roles y permisos no comparten modelo ni flujo de autenticación.
+- **Validación en el borde** con Zod 4 y contraseñas con argon2.
+- **Reglas que vive la base de datos:** la doble reserva la impide una restricción GiST (arriba), la reserva congela su precio en USD, la tasa aplicada y el precio en bolívares para que un cambio de tasa posterior no la altere, los datos de cada complejo se aíslan con RLS y la auditoría es append-only, con UPDATE y DELETE revocados.
+
+## Pruebas
+
+89 casos de prueba en 21 archivos de Vitest, incluidas **64 propiedades con fast-check** en 13 archivos. En lugar de unos pocos ejemplos escritos a mano, generan muchas entradas y comprueban que el dominio mantenga sus invariantes.
+
+## Honestidad sobre la autoría
+
+- **Backend:** autor.
+- **Panel web** (Vite 7, React 19, React Router 7, Tailwind 4, React Query): commit inicial mío.
+- **App móvil** (Expo 54 / React Native): la empezó otro desarrollador. Mi aporte fue un commit grande de integración que la llevó a su estado actual.

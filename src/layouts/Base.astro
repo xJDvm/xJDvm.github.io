@@ -1,0 +1,106 @@
+---
+import '../styles/global.css';
+import { dict, paths, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+  title?: string;
+  description?: string;
+  alternates: Record<Lang, string>;
+  ogType?: 'website' | 'article';
+}
+const { lang, title, description, alternates, ogType = 'website' } = Astro.props;
+const t = dict[lang];
+const pageTitle = title ?? t.metaTitle;
+const desc = description ?? t.metaDesc;
+const site = Astro.site ?? new URL('https://xjdvm.github.io');
+const canonical = new URL(Astro.url.pathname, site).href;
+const og = new URL('/og.png', site).href;
+const home = paths.home(lang);
+---
+<!doctype html>
+<html lang={t.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={desc} />
+    <meta name="author" content="Juan Diego Valdés M." />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es" href={new URL(alternates.es, site).href} />
+    <link rel="alternate" hreflang="en" href={new URL(alternates.en, site).href} />
+    <link rel="alternate" hreflang="x-default" href={new URL(alternates.es, site).href} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#F4EFE6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B0B0F" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={t.locale} />
+    <meta property="og:locale:alternate" content={lang === 'es' ? dict.en.locale : dict.es.locale} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      /* Tema sin parpadeo: aplica la preferencia guardada antes de pintar. */
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'light' || t === 'dark') d.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <header class="nav">
+      <div class="wrap">
+        <a class="logo" href={home} aria-label={t.homeAria}><i aria-hidden="true"></i><span>Juan Diego<span class="full"> Valdés</span></span></a>
+        <nav aria-label={t.navLabel}>
+          <ul>
+            {t.nav.map(([id, n, label]) => (
+              <li><a href={`${home}#${id}`} data-sec={id}><span>{n}</span>{label}</a></li>
+            ))}
+          </ul>
+        </nav>
+        <div class="nav-end">
+          <nav class="lang" aria-label={t.langLabel}>
+            <a href={alternates.es} hreflang="es" lang="es" aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
+            <a href={alternates.en} hreflang="en" lang="en" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+          </nav>
+          <button class="theme-toggle" type="button" id="theme-toggle" data-label-dark={t.themeToDark} data-label-light={t.themeToLight} aria-label={t.themeToDark} hidden>
+            <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" /></svg>
+            <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" /><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" /></svg>
+          </button>
+          <a class="btn sm hot" href={`${home}#contacto`}>{t.navCta} <span class="arr" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer>
+      <div class="wrap mono">
+        <span>{t.footer[0]}</span>
+        <span>{t.footer[1]}</span>
+        <a href="#main">{t.top}</a>
+      </div>
+    </footer>
+
+    <div class="cur" id="cur" aria-hidden="true"></div>
+    <script>
+      import '../scripts/site';
+    </script>
+  </body>
+</html>

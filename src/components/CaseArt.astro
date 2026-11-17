@@ -1,0 +1,202 @@
+---
+/* Ilustraciones SVG en línea, una por caso. Sin capturas ni datos de clientes.
+   Paleta oscura: fondo surface, trazos y texto "web", acentos rojo/teal, wine solo como relleno con texto blanco. */
+import type { Lang } from '../i18n';
+interface Props { k: string; lang: Lang; }
+const { k, lang } = Astro.props;
+const es = lang === 'es';
+const M = 'JetBrains Mono,ui-monospace,monospace';
+const D = 'Bricolage Grotesque Variable,system-ui,sans-serif';
+const S = 'Instrument Sans Variable,system-ui,sans-serif';
+/* Colores ligados al tema mediante variables CSS (definidas en .shot en global.css). */
+const BG = 'var(--a-bg)', BOX = 'var(--a-box)', L = 'var(--a-line)', KB = 'var(--a-deep)', TT = 'var(--a-tt)', MU = 'var(--a-muted)';
+const K = '#0B0B0F', T = '#19C2BE', R = '#E0202F', W = '#9B1030', WH = '#FFFFFF';
+const alt: Record<string, [string, string]> = {
+  'respondio-aws': ['Ilustración: webhooks entran por API Gateway a SNS, se reparten en colas SQS con su Lambda y terminan en Aurora PostgreSQL', 'Illustration: webhooks enter through API Gateway into SNS, fan out to SQS queues each with a Lambda, and end in Aurora PostgreSQL'],
+  'contact-center-ai': ['Ilustración: flujo de un mensaje desde el webhook hasta el agente, con atajo determinístico para FAQ', 'Illustration: a message flowing from webhook to agent, with a deterministic FAQ shortcut'],
+  'mcp-cedar-gateway': ['Ilustración: el gateway con política Cedar permite operaciones de la allowlist y bloquea el borrado', 'Illustration: the Cedar-policy gateway allows allowlisted operations and blocks delete'],
+  'sportapp': ['Ilustración: arquitectura hexagonal con el dominio de reservas en el centro', 'Illustration: hexagonal architecture with the bookings domain at the center'],
+  'clinical-inventory-ai': ['Ilustración: una nota en texto libre pasa por un modelo local y sale como parámetros estructurados', 'Illustration: a free-text note goes through a local model and comes out as structured parameters'],
+  'cdlf': ['Ilustración: colas por paciente con debounce de 4 segundos antes de responder', 'Illustration: per-patient queues with a 4-second debounce before replying'],
+};
+const label = (alt[k] ?? ['', ''])[es ? 0 : 1];
+---
+<svg style={`fill:${L}`} viewBox="0 0 480 384" role="img" aria-label={label} xmlns="http://www.w3.org/2000/svg" >
+  <rect style={`fill:${BG}`} width="480" height="384" />
+  <g style={`stroke:${L}`} stroke-opacity=".06" fill="none"><path d="M480 0L0 384M480 0L0 192M480 0L240 384M380 0A100 100 0 0 0 480 100M260 0A220 220 0 0 0 480 220M140 0A340 340 0 0 0 480 340" /></g>
+  {k === 'respondio-aws' && (
+    <g font-family={M} font-size="11" font-weight="700">
+      <rect style={`fill:${BOX};stroke:${L}`} stroke-width="3" x="20" y="34" width="110" height="40" rx="8" />
+      <text style={`fill:${L}`} x="75" y="59" text-anchor="middle">webhooks</text>
+      <rect style={`fill:${R};stroke:${L}`} stroke-width="3" x="150" y="34" width="110" height="40" rx="8" />
+      <text style={`fill:${WH}`} x="205" y="59" text-anchor="middle">API GW</text>
+      <rect style={`fill:${W};stroke:${L}`} stroke-width="3" x="280" y="34" width="180" height="40" rx="8" />
+      <text style={`fill:${WH}`} x="370" y="59" text-anchor="middle">SNS · {es ? 'filtros' : 'filters'}</text>
+      <g style={`stroke:${L}`} stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M130 54h20M260 54h20" />
+        <path d="M370 74v22M64 96H400M64 96v18M176 96v18M288 96v18M400 96v18" />
+      </g>
+      {[0, 1, 2, 3].map((q) => (
+        <g>
+          <rect style={`fill:${T};stroke:${L}`} stroke-width="2.5" x={24 + q * 112} y="114" width="80" height="34" rx="6" />
+          <text style={`fill:${K}`} x={64 + q * 112} y="136" text-anchor="middle">{q === 3 ? 'SQS ×16' : `SQS ${q + 1}`}</text>
+          <rect style={`fill:${BOX};stroke:${L}`} stroke-width="2.5" x={24 + q * 112} y="172" width="80" height="34" rx="6" />
+          <text style={`fill:${L}`} x={64 + q * 112} y="194" text-anchor="middle">λ py3.12</text>
+          <path style={`stroke:${L}`} stroke-width="2.5" fill="none" d={`M${64 + q * 112} 148v24M${64 + q * 112} 206v26`} />
+        </g>
+      ))}
+      <path style={`stroke:${L}`} stroke-width="3" fill="none" d="M64 232H400" />
+      <path style={`stroke:${L};fill:${KB}`} stroke-width="3" d="M150 244c0-10 180-10 180 0v52c0 10-180 10-180 0z" />
+      <path style={`stroke:${L}`} stroke-width="3" fill="none" d="M150 244c0 10 180 10 180 0" />
+      <text style={`fill:${L}`} x="240" y="280" text-anchor="middle">Aurora PostgreSQL 16</text>
+      <path style={`stroke:${L}`} stroke-width="3" fill="none" d="M240 232v12" />
+      <text style={`fill:${TT}`} x="24" y="270" font-weight="400">EventBridge</text>
+      <text style={`fill:${TT}`} x="24" y="288" font-weight="400">cron 03:00</text>
+      <text style={`fill:${TT}`} x="456" y="270" text-anchor="end" font-weight="400">S3 → SQS</text>
+      <text style={`fill:${TT}`} x="456" y="288" text-anchor="end" font-weight="400">SES · SSM</text>
+    </g>
+  )}
+  {k === 'contact-center-ai' && (
+    <g font-family={M} font-size="11" font-weight="700">
+      <g style={`stroke:${L}`} stroke-width="3">
+        <rect style={`fill:${BOX}`} x="20" y="40" width="96" height="40" rx="8" />
+        <rect style={`fill:${BOX}`} x="136" y="40" width="96" height="40" rx="8" />
+        <rect style={`fill:${BOX}`} x="252" y="40" width="96" height="40" rx="8" />
+        <rect style={`fill:${T}`} x="364" y="40" width="96" height="40" rx="8" />
+        <rect style={`fill:${R}`} x="364" y="132" width="96" height="56" rx="8" />
+        <rect style={`fill:${W}`} x="200" y="132" width="132" height="56" rx="8" />
+        <rect style={`fill:${BOX}`} x="200" y="232" width="132" height="56" rx="8" />
+        <rect style={`fill:${KB}`} x="20" y="232" width="140" height="56" rx="8" />
+      </g>
+      <text x="68" y="65" text-anchor="middle">webhook</text>
+      <text x="184" y="65" text-anchor="middle">API GW</text>
+      <text x="300" y="65" text-anchor="middle">SNS → SQS</text>
+      <text style={`fill:${K}`} x="412" y="65" text-anchor="middle" >Lambda</text>
+      <text style={`fill:${WH}`} x="412" y="157" text-anchor="middle" >{es ? '¿FAQ' : 'Closed'}</text>
+      <text style={`fill:${WH}`} x="412" y="175" text-anchor="middle" >{es ? 'cerrada?' : 'FAQ?'}</text>
+      <text style={`fill:${WH}`} x="266" y="157" text-anchor="middle" >AgentCore</text>
+      <text style={`fill:${WH}`} x="266" y="175" text-anchor="middle" >Strands + tools</text>
+      <text x="266" y="257" text-anchor="middle">DynamoDB</text>
+      <text style={`fill:${TT}`} x="266" y="275" text-anchor="middle" font-weight="400" >{es ? 'sin LLM' : 'no LLM'}</text>
+      <text style={`fill:${TT}`} x="90" y="257" text-anchor="middle" >MCP → {es ? 'cliente' : 'customer'}</text>
+      <text x="90" y="275" text-anchor="middle" font-weight="400">WhatsApp · web</text>
+      <g style={`stroke:${L}`} stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M116 60h20M232 60h20M348 60h16" />
+        <path d="M412 80v52" />
+        <path d="M364 160h-32" />
+        <path style={`stroke:${TT}`} d="M412 188v72h-80" />
+        <path d="M200 160h-110v72" />
+        <path d="M200 260h-40" />
+      </g>
+      <text x="348" y="152" font-size="10" text-anchor="middle">no</text>
+      <text style={`fill:${TT}`} x="424" y="226" font-size="10" >{es ? 'sí' : 'yes'}</text>
+    </g>
+  )}
+  {k === 'mcp-cedar-gateway' && (
+    <g font-family={M} font-size="11" font-weight="700">
+      <rect style={`fill:${BOX};stroke:${L}`} x="24" y="118" width="104" height="84" rx="10" stroke-width="3" />
+      <text x="76" y="152" text-anchor="middle">{es ? 'AGENTE' : 'AGENT'}</text>
+      <text style={`fill:${TT}`} x="76" y="170" text-anchor="middle" font-weight="400" >Strands</text>
+      <path style={`fill:${R};stroke:${L}`} d="M216 36 l62 22 v64 c0 52 -30 86 -62 100 c-32 -14 -62 -48 -62 -100 v-64 z" stroke-width="3" transform="translate(0 30)" />
+      <text style={`fill:${WH}`} x="216" y="140" text-anchor="middle" >Cedar</text>
+      <text style={`fill:${WH}`} x="216" y="158" text-anchor="middle" >default-deny</text>
+      <text style={`fill:${WH}`} x="216" y="182" text-anchor="middle" font-weight="400">Gateway · MCP</text>
+      <g style={`stroke:${L}`} stroke-width="2.5">
+        {['read_*', 'list_*', 'create_*', 'update_*'].map((op, i) => (
+          <g>
+            <rect style={`fill:${T}`} x="314" y={40 + i * 46} width="146" height="34" rx="6" />
+            <text style={`fill:${K}`} x="326" y={62 + i * 46} stroke="none" >✓ {op}</text>
+          </g>
+        ))}
+        <rect style={`fill:${BG}`} x="314" y="232" width="146" height="34" rx="6" stroke-dasharray="5 5" />
+        <text style={`fill:${MU}`} x="326" y="254" stroke="none" text-decoration="line-through">✕ delete_*</text>
+      </g>
+      <text style={`fill:${MU}`} x="314" y="290" font-weight="400" >JSON-RPC -32002</text>
+      <g style={`stroke:${L}`} stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M128 160h26" />
+        <path d="M278 160 C296 160 296 57 314 57" /><path d="M278 160 C296 160 296 149 314 149" />
+        <path style={`stroke:${R}`} d="M278 160 C296 160 296 249 306 249" stroke-dasharray="4 6" />
+      </g>
+      <g transform="rotate(-5 120 290)">
+        <rect style={`fill:${BOX};stroke:${TT}`} x="40" y="276" width="150" height="30" rx="6" stroke-width="3" />
+        <text x="115" y="296" text-anchor="middle">idempotency · DDB</text>
+      </g>
+    </g>
+  )}
+  {k === 'sportapp' && (
+    <g font-family={M} font-size="11" font-weight="700">
+      <polygon style={`fill:${BOX};stroke:${L}`} points="240,40 360,100 360,220 240,280 120,220 120,100" stroke-width="3" />
+      <polygon style={`fill:${R};stroke:${L}`} points="240,110 296,138 296,194 240,222 184,194 184,138" stroke-width="3" />
+      <text style={`fill:${WH}`} x="240" y="162" text-anchor="middle" >bookings</text>
+      <text style={`fill:${WH}`} x="240" y="180" text-anchor="middle" font-weight="400">Result ok/err</text>
+      {[
+        ['auth', 200, 78], ['venues', 300, 90], ['payments', 330, 160], ['reviews', 300, 238], ['search', 196, 248], ['scheduling', 150, 160],
+      ].map(([t, x, y]) => (
+        <text x={x as number} y={y as number} text-anchor="middle" font-weight="400">{t}</text>
+      ))}
+      <g style={`stroke:${L}`} stroke-width="3">
+        <rect style={`fill:${T}`} x="18" y="56" width="92" height="40" rx="8" />
+        <rect style={`fill:${W}`} x="370" y="224" width="92" height="40" rx="8" />
+        <rect style={`fill:${KB}`} x="18" y="224" width="92" height="40" rx="8" />
+      </g>
+      <text style={`fill:${K}`} x="64" y="81" text-anchor="middle" >{es ? 'clientes' : 'customers'}</text>
+      <text style={`fill:${WH}`} x="416" y="249" text-anchor="middle" >{es ? 'panel' : 'panel'}</text>
+      <text style={`fill:${TT}`} x="64" y="249" text-anchor="middle" >Postgres</text>
+      <g style={`stroke:${L}`} stroke-width="3" fill="none"><path d="M110 76h40M370 244h-40M110 244h40" /></g>
+      <text style={`fill:${TT}`} x="362" y="62" font-weight="400" >fast-check ✓</text>
+    </g>
+  )}
+  {k === 'clinical-inventory-ai' && (
+    <g font-family={M} font-size="11">
+      <path style={`fill:${BOX};stroke:${L}`} d="M24 56 h168 a10 10 0 0 1 10 10 v72 a10 10 0 0 1 -10 10 h-120 l-22 22 v-22 h-26 a10 10 0 0 1 -10 -10 v-72 a10 10 0 0 1 10 -10z" stroke-width="3" />
+      <text style={`fill:${TT}`} x="40" y="84" font-weight="700" >{es ? 'NOTA' : 'NOTE'}</text>
+      <text x="40" y="106" font-family={S} font-size="14">{es ? '«faltan guantes M,' : '“out of size M'}</text>
+      <text x="40" y="126" font-family={S} font-size="14">{es ? 'pedir para 2 semanas»' : 'gloves, 2 weeks”'}</text>
+      <rect style={`fill:${R};stroke:${L}`} x="196" y="186" width="120" height="64" rx="10" stroke-width="3" />
+      <text style={`fill:${WH}`} x="256" y="214" text-anchor="middle" font-weight="700">Ollama</text>
+      <text style={`fill:${WH}`} x="256" y="232" text-anchor="middle" >qwen2.5 · 7B</text>
+      <rect style={`fill:${KB};stroke:${L}`} x="300" y="40" width="160" height="128" rx="10" stroke-width="3" />
+      <text x="314" y="66" font-weight="700">{'{'}</text>
+      <text style={`fill:${TT}`} x="326" y="88" >"item": "gloves_m",</text>
+      <text style={`fill:${TT}`} x="326" y="108" >"days": 14,</text>
+      <text style={`fill:${TT}`} x="326" y="128" >"action": "restock"</text>
+      <text x="314" y="150" font-weight="700">{'}'}</text>
+      <g style={`stroke:${L}`} stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M110 170 C110 218 150 218 196 218" />
+        <path d="M316 218 C380 218 380 200 380 168" />
+      </g>
+      <g transform="rotate(3 140 300)">
+        <rect style={`fill:${T};stroke:${L}`} x="40" y="286" width="196" height="32" rx="6" stroke-width="3" />
+        <text style={`fill:${K}`} x="138" y="307" text-anchor="middle" font-weight="700" >{es ? 'LOCAL · SIN API EXTERNA' : 'LOCAL · NO EXTERNAL API'}</text>
+      </g>
+    </g>
+  )}
+  {k === 'cdlf' && (
+    <g font-family={M} font-size="11" font-weight="700">
+      <text style={`fill:${TT}`} x="28" y="44" >SQS FIFO · {es ? 'POR PACIENTE' : 'PER PATIENT'}</text>
+      {[0, 1, 2].map((r) => (
+        <g>
+          <rect style={`fill:${BOX};stroke:${L}`} x="28" y={60 + r * 62} width="300" height="46" rx="8" stroke-width="3" />
+          <text x="40" y={88 + r * 62}>P{r + 1}</text>
+          {[0, 1, 2, 3].slice(0, 4 - r).map((m) => (
+            <rect style={`fill:${m === 3 - r ? R : T};stroke:${L}`} x={78 + m * 40} y={72 + r * 62} width="30" height="22" rx="4" stroke-width="2" />
+          ))}
+        </g>
+      ))}
+      <rect style={`fill:${W};stroke:${L}`} x="352" y="60" width="104" height="170" rx="10" stroke-width="3" />
+      <text style={`fill:${WH}`} x="404" y="100" text-anchor="middle" >debounce</text>
+      <text style={`fill:${WH}`} x="404" y="140" text-anchor="middle" font-family={D} font-size="34" font-weight="800">4 s</text>
+      <text style={`fill:${WH}`} x="404" y="176" text-anchor="middle" font-weight="400">{es ? '¿mensaje' : 'newer'}</text>
+      <text style={`fill:${WH}`} x="404" y="192" text-anchor="middle" font-weight="400">{es ? 'más nuevo?' : 'message?'}</text>
+      <g style={`stroke:${L}`} stroke-width="3" fill="none"><path d="M328 145h24" /></g>
+      <g style={`stroke:${L}`} stroke-width="3">
+        <rect style={`fill:${BOX}`} x="28" y="252" width="130" height="40" rx="8" />
+        <rect style={`fill:${R}`} x="174" y="252" width="130" height="40" rx="8" />
+        <rect style={`fill:${T}`} x="320" y="252" width="136" height="40" rx="8" />
+      </g>
+      <text x="93" y="277" text-anchor="middle">HMAC ✓</text>
+      <text style={`fill:${WH}`} x="239" y="277" text-anchor="middle" >{es ? 'puerta clínica' : 'clinical gate'}</text>
+      <text style={`fill:${K}`} x="388" y="277" text-anchor="middle" >{es ? 'IA + KB' : 'AI + KB'}</text>
+    </g>
+  )}
+</svg>

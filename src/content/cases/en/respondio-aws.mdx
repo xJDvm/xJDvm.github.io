@@ -1,0 +1,68 @@
+---
+key: respondio-aws
+lang: en
+order: 2
+title: Messaging architecture on AWS
+short: Messaging on AWS
+label: 02 — Retail · Integrations
+period: Dec 2024 — Jul 2026
+summary: The serverless backend that connects the Respond.io messaging platform to a retail client’s systems. Every message, contact and conversation event goes through SNS and SQS, gets processed by a Lambda and ends up in Aurora PostgreSQL.
+problem: The B2B sales channel runs on Respond.io. Every message, contact, assignment and conversation had to be stored, analyzed and trigger processes such as after-hours alerts, keyword detection, deliveries and SAP quotes, without losing events and without coupling one process to another.
+decision: Event fan-out. API Gateway, with an IP allowlist and an API key, publishes to SNS. Event-type filters route traffic to independent SQS queues, each with its own Python 3.12 Lambda, and everything persists in Aurora PostgreSQL. New services live in a consumer stack that references the API and database without owning them.
+role: Lead backend developer. I made 571 of the repository’s 953 commits (60%) and am the main author of the infrastructure template (SAM), though not the only one. I also made 56 of the 123 commits of the contact center backend, which uses the same pattern.
+result: A serverless platform with 25 Lambda functions, 19 SQS queues, 3 SNS topics with 16 filtered subscriptions, 1 API Gateway, an EventBridge bus, one scheduled job and Aurora PostgreSQL 16, deployable per environment with SAM.
+tag: AWS
+stack: [Python 3.12, AWS SAM, API Gateway, SNS, SQS, Lambda, Aurora PostgreSQL, EventBridge, S3, SES, Secrets Manager, SSM, CloudWatch, OpenSearch]
+sticker: { value: '19', label: 'SQS queues filtered by event type' }
+footprint:
+  - { value: '571 of 953', label: 'repository commits (60%)' }
+  - { value: '25', label: 'Lambda functions (Python 3.12)' }
+  - { value: '19', label: 'SQS queues' }
+  - { value: '3 · 16', label: 'SNS topics · filtered subscriptions' }
+  - { value: '20', label: 'Aurora tables referenced in code' }
+  - { value: '1', label: 'REST API Gateway with API key' }
+color: bg
+---
+
+## The problem
+
+Respond.io is the messaging platform for the client’s B2B sales channel. Its webhooks cover messages received and sent, contacts created or updated, assignment changes, and conversations opened and closed. Every event has to reach the client’s database and often trigger something else: an after-hours alert, keyword detection, conversation analysis or a delivery update.
+
+## The architecture
+
+```text
+Respond.io (webhooks)
+  → API Gateway (IP allowlist + API key)
+  → SNS (entry topic)
+      ├─ filter event_type = message.received → SQS → Lambda: store message
+      ├─ filter event_type = message.received → SQS → Lambda: keywords
+      ├─ filter contact.*                     → SQS → Lambda: contacts
+      ├─ filter conversation.*                → SQS → Lambda: conversations
+      └─ …                                    → 19 queues in total
+  → Aurora PostgreSQL 16 (in a VPC, credentials in Secrets Manager)
+
+EventBridge bus · daily scheduled job (cron 03:00) · S3 → SQS (SAP files)
+```
+
+- **One topic, many queues.** SNS filters on `event_type` and each process has its own queue and Lambda. If one process fails or falls behind, the others keep going.
+- **Relational persistence.** Aurora PostgreSQL 16 in a cluster inside the VPC, with its own parameter and subnet groups. Credentials live in Secrets Manager and configuration in Parameter Store.
+- **Inputs that aren’t webhooks.** Files landing in S3, such as offers and quotes exported from SAP, become queue messages. A scheduled job checks pending messages every night.
+- **Infrastructure as code.** The whole platform is one SAM template, with separate environments in `samconfig.toml` and a per-environment network parameter resolver.
+- **Explicit ownership.** To grow without touching the main stack, I set up a *shared services* consumer stack, which for now is a scaffold. It takes the API ID and the Aurora endpoint as parameters, creates no deployments or stages, and has the VPC configuration ready for future functions.
+
+## What I did
+
+I was the repository’s top contributor for a year and a half, within a team. Among other things, I:
+
+- Centralized email sending (SES) into one service.
+- Set up queue-based conversation analysis.
+- Built the endpoints for the delivery form and dashboard: lookups, locations and statuses.
+- Moved SAP quote notes from S3 into SQS.
+- Tuned the timeouts for delivery updates (up to 900 s).
+- Worked on customer data.
+
+## The same pattern in the contact center
+
+The same client’s contact center backend follows the same architecture: 16 Lambdas and 12 queues, with SNS filters by event type. There I added audio transcription with AWS Transcribe, a satisfaction survey and email alerts for pending messages. I also deployed Respond.io’s MCP server on ECS. That server is Respond.io’s open-source project: I deployed and ran it, I didn’t write it.
+
+> Code, schemas and identifiers belong to the client. Here I describe the pattern, without data.

@@ -1,0 +1,46 @@
+---
+key: sportapp
+lang: en
+order: 5
+title: SportApp
+short: SportApp
+label: 05 — Sports bookings
+period: May — Jun 2026
+summary: Backend for a platform where customers book sports courts from their phone and venues manage them from a web panel.
+problem: Two audiences with opposite needs share the same booking domain. Customers book from mobile, while venues manage courts, schedules, payments, promotions and staff.
+decision: Modular hexagonal architecture with a Result type (ok/err) and a DomainError hierarchy, and two separate identity domains, one for mobile customers and one for panel users and roles.
+role: Author of the backend and of the web panel’s initial commit. Another developer started the mobile app; I did the large integration that connected it to the API.
+result: A working platform with a versioned /api/v1 API, 16 hexagonal modules and 69 use cases, 38 PostgreSQL tables, auth with argon2 and JWT, and tests with Vitest and fast-check.
+stack: [TypeScript, Node, Express 5, PostgreSQL, Zod, argon2, JWT, Vitest, fast-check, Docker, React 19, Expo]
+sticker: { value: '2', label: 'separate identity domains' }
+tag: full-stack
+footprint:
+  - { value: '16', label: 'hexagonal modules' }
+  - { value: '69', label: 'use cases' }
+  - { value: '38', label: 'PostgreSQL tables' }
+  - { value: '89', label: 'Vitest test cases' }
+  - { value: '64', label: 'fast-check properties' }
+color: surface
+---
+
+## Context
+
+SportApp is a court-booking platform (padel, football and more) with three parts: backend, a web panel for venues and a mobile app for customers. My main work is the **backend**.
+
+## Decisions
+
+- **Hexagonal, by module:** 16 modules: auth, client-auth, authz, users, bookings, catalog, venues, scheduling, payments, promotions, reviews, search, media, audit, currency and admin. `createApp()` wires the adapters and `BookingRepository` is the domain’s central port.
+- **Errors as values:** a `Result` type (`ok`/`err`) and a `DomainError` hierarchy. Use cases don’t throw on business rules; they return a result that the HTTP adapter translates.
+- **Two identities:** the customer booking from the app and the venue employee with roles and permissions share neither a model nor an auth flow.
+- **Validation at the edge** with Zod 4, and passwords hashed with argon2.
+- **Rules that live in the database:** a GiST constraint (above) rules out double bookings, each booking freezes its USD price, the applied exchange rate and the bolívar price so a later rate change can’t alter it, each venue’s data is isolated with RLS, and the audit log is append-only, with UPDATE and DELETE revoked.
+
+## Testing
+
+89 test cases in 21 Vitest files, including **64 fast-check properties** across 13 files. Instead of a few hand-written examples, they generate many inputs and check that the domain keeps its invariants.
+
+## Being honest about authorship
+
+- **Backend:** mine.
+- **Web panel** (Vite 7, React 19, React Router 7, Tailwind 4, React Query): initial commit by me.
+- **Mobile app** (Expo 54 / React Native): started by another developer. My contribution was a large integration commit that brought it to its current state.

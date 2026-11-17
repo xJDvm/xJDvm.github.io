@@ -1,0 +1,68 @@
+---
+key: respondio-aws
+lang: es
+order: 2
+title: Arquitectura de mensajería en AWS
+short: Mensajería en AWS
+label: 02 — Retail · Integraciones
+period: dic 2024 — jul 2026
+summary: El backend serverless que conecta la plataforma de mensajería Respond.io con los sistemas de un cliente retail. Cada evento de mensajes, contactos y conversaciones pasa por SNS y SQS, lo procesa una Lambda y termina en Aurora PostgreSQL.
+problem: El canal de ventas a empresas vive en Respond.io. Cada mensaje, contacto, asignación o conversación tenía que guardarse, analizarse y disparar procesos como avisos fuera de horario, detección de palabras clave, despachos y cotizaciones desde SAP, sin perder eventos y sin acoplar unos procesos con otros.
+decision: Fan-out por eventos. API Gateway, con lista de IPs permitidas y API key, publica en SNS. Filtros por tipo de evento reparten el tráfico a colas SQS independientes, cada una con su Lambda en Python 3.12, y todo persiste en Aurora PostgreSQL. Los nuevos servicios se montan en un stack consumidor que referencia la API y la base sin adueñarse de ellas.
+role: Desarrollador principal del backend. Hice 571 de los 953 commits del repositorio (60 %) y soy el principal autor de la plantilla de infraestructura (SAM), aunque no el único. También hice 56 de los 123 commits del backend del contact center, que usa el mismo patrón.
+result: Una plataforma serverless con 25 funciones Lambda, 19 colas SQS, 3 tópicos SNS con 16 suscripciones filtradas, 1 API Gateway, un bus de EventBridge, una tarea programada y Aurora PostgreSQL 16, que se despliega por ambiente con SAM.
+tag: AWS
+stack: [Python 3.12, AWS SAM, API Gateway, SNS, SQS, Lambda, Aurora PostgreSQL, EventBridge, S3, SES, Secrets Manager, SSM, CloudWatch, OpenSearch]
+sticker: { value: '19', label: 'colas SQS filtradas por tipo de evento' }
+footprint:
+  - { value: '571 de 953', label: 'commits del repositorio (60 %)' }
+  - { value: '25', label: 'funciones Lambda (Python 3.12)' }
+  - { value: '19', label: 'colas SQS' }
+  - { value: '3 · 16', label: 'tópicos SNS · suscripciones filtradas' }
+  - { value: '20', label: 'tablas de Aurora referenciadas en el código' }
+  - { value: '1', label: 'API Gateway REST con API key' }
+color: bg
+---
+
+## El problema
+
+Respond.io es la plataforma de mensajería del canal de ventas a empresas del cliente. Sus webhooks cubren mensajes recibidos y enviados, contactos creados o actualizados, cambios de asignación, aperturas y cierres de conversación. Cada evento tiene que llegar a la base de datos del cliente y a menudo disparar algo más: avisar fuera de horario, detectar palabras clave, analizar la conversación o actualizar un despacho.
+
+## La arquitectura
+
+```text
+Respond.io (webhooks)
+  → API Gateway (lista de IPs permitidas + API key)
+  → SNS (tópico de entrada)
+      ├─ filtro event_type = message.received → SQS → Lambda: guardar mensaje
+      ├─ filtro event_type = message.received → SQS → Lambda: palabras clave
+      ├─ filtro contact.*                     → SQS → Lambda: contactos
+      ├─ filtro conversation.*                → SQS → Lambda: conversaciones
+      └─ …                                    → 19 colas en total
+  → Aurora PostgreSQL 16 (en VPC, credenciales en Secrets Manager)
+
+Bus de EventBridge · tarea programada diaria (cron 03:00) · S3 → SQS (archivos de SAP)
+```
+
+- **Un tópico, muchas colas.** SNS filtra por `event_type` y cada proceso tiene su cola y su Lambda. Si un proceso falla o se atrasa, los demás siguen.
+- **Persistencia relacional.** Aurora PostgreSQL 16 en un clúster dentro de la VPC, con grupo de parámetros y de subredes propios. Las credenciales viven en Secrets Manager y la configuración en Parameter Store.
+- **Entradas que no son webhooks.** Archivos que llegan a S3, como las ofertas y cotizaciones exportadas de SAP, se convierten en mensajes de cola. Una tarea programada revisa cada madrugada los mensajes pendientes.
+- **Infraestructura como código.** Toda la plataforma está en una plantilla SAM, con ambientes separados en `samconfig.toml` y un resolvedor de parámetros de red por ambiente.
+- **Ownership explícito.** Para crecer sin tocar el stack principal, dejé preparado un stack consumidor de *servicios comunes*, que por ahora es un scaffold. Recibe por parámetros el ID de la API y el endpoint de Aurora, no crea deployments ni stages y deja preparada la configuración de VPC para las funciones futuras.
+
+## Qué hice yo
+
+Fui el mayor contribuyente del repositorio durante año y medio, dentro de un equipo. Entre otras cosas:
+
+- Centralicé el envío de correos (SES) en un solo servicio.
+- Monté el análisis de conversaciones por cola.
+- Construí los endpoints del formulario y del dashboard de despachos: consultas, ubicaciones y estados.
+- Llevé las notas de cotización de SAP de S3 a SQS.
+- Ajusté los tiempos de las actualizaciones de despacho (hasta 900 s).
+- Trabajé en los datos de cliente.
+
+## El mismo patrón en el contact center
+
+El backend del contact center del mismo cliente sigue la misma arquitectura: 16 Lambdas y 12 colas, con filtros de SNS por tipo de evento. Ahí añadí la transcripción de audios con AWS Transcribe, una encuesta de satisfacción y avisos por email de mensajes pendientes. También desplegué en ECS el servidor MCP de Respond.io, que es *open source* de Respond.io: yo lo desplegué y lo operé, no lo escribí.
+
+> Código, esquemas e identificadores son del cliente. Aquí describo el patrón, sin datos.

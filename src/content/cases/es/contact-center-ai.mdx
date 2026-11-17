@@ -1,0 +1,61 @@
+---
+key: contact-center-ai
+lang: es
+order: 1
+title: Agentes de IA para contact center
+short: Agentes de contact center
+label: 01 — Retail · Contact center
+period: abr — sep 2026
+summary: Agentes de ventas, recepción y soporte sobre Respond.io y n8n, gobernados como código, y la migración del agente de ventas a Amazon Bedrock AgentCore con Strands, para un cliente retail en Latinoamérica.
+problem: Tres agentes conversacionales vivían como prompts, workflows y base de conocimiento repartidos en dos plataformas, con dos ambientes que había que mantener alineados sin romper la atención a clientes.
+decision: Tratar a los agentes como código. Hay un catálogo único por ambiente, descargas de solo lectura, publicaciones en dry-run hasta confirmar y una suite de regresión común. En la migración, las FAQ cerradas se responden de forma determinística desde DynamoDB, sin invocar al modelo.
+role: Autor único de los dos repositorios, el control de versiones de los agentes (abr–sep 2026) y la migración a AgentCore (sep 2026, 14 ADR).
+result: Tres agentes que atienden ventas, recepción y soporte, con promociones controladas entre ambientes. El agente de ventas también corre en AgentCore con memoria entre turnos, FAQ resueltas sin invocar al modelo y rechazo de orígenes no autorizados.
+tag: IA
+stack: [Python, n8n, Respond.io, Bedrock AgentCore, Strands Agents, Claude Haiku 4.5, AWS SAM, API Gateway, SNS, SQS, Lambda, DynamoDB]
+sticker: { value: '14 ADR', label: 'en la migración a AgentCore' }
+footprint:
+  - { value: '77 de 77', label: 'commits en los 2 repos (autor único)' }
+  - { value: '12', label: 'workflows n8n versionados (3 + 9 sub)' }
+  - { value: '6', label: 'herramientas del agente en AgentCore' }
+  - { value: '221', label: 'casos de prueba unitarios (AgentCore)' }
+  - { value: '10', label: 'casos de regresión en 2 suites' }
+  - { value: '14', label: 'ADR' }
+color: wine
+---
+
+## Contexto
+
+El contact center del cliente atiende por WhatsApp y web a través de Respond.io. Encima corren tres agentes de IA, de **ventas**, **recepción** y **soporte**, cuyo comportamiento vive en dos sitios: agentes de Respond.io y workflows de n8n, más una base de conocimiento.
+
+## Parte 1: los agentes como código
+
+El riesgo no era técnico, era operativo: editar un prompt a mano en el ambiente equivocado y descubrir el problema por un cliente. Construí un controlador versionado en Python con estas reglas:
+
+- **Un catálogo por ambiente** con IDs, endpoints y *referencias* a secretos, nunca sus valores.
+- **Descargas solo con `GET`.** Publicar es otra operación, en **dry-run por defecto**, que exige `--apply` y confirmación.
+- **Comportamiento canónico separado de los snapshots**: lo portable de los workflows de n8n por un lado y lo publicado en cada ambiente por otro.
+- **Una suite de regresión común** para los tres agentes.
+
+Con eso se promovieron mejoras como el saludo web, la recuperación de *timeouts* del recepcionista, el traspaso síncrono a un asesor humano y políticas de servicio leídas desde la base de conocimiento.
+
+## Parte 2: migración a Bedrock AgentCore
+
+El agente de ventas se movió de n8n + Respond.io a **Amazon Bedrock AgentCore** con **Strands Agents**, en paralelo y sin tocar la operación vigente.
+
+1. Respond.io envía un webhook a API Gateway, restringido por IP y VPC.
+2. SNS y SQS, con cola de mensajes fallidos, desacoplan la entrada.
+3. Una Lambda normalizadora deduplica y clasifica. Si el mensaje es una **FAQ cerrada, responde desde DynamoDB sin invocar al LLM**.
+4. Si no, invoca el Runtime del agente de ventas (Claude Haiku 4.5), con memoria compartida de AgentCore y seis herramientas: cotización, stock y precio, seguimiento de despacho, traspaso a un asesor, búsqueda en la base de conocimiento y consulta de garantía.
+5. La respuesta vuelve al cliente por el servidor MCP de Respond.io.
+
+Dejé **14 ADR**. Entre ellos están las respuestas determinísticas para FAQ, la entrada asíncrona y la decisión de no usar Docker, ECR ni CDK. Uno más, un Runtime por agente, sigue como propuesta y no lo cuento como decisión tomada.
+
+### Otras decisiones con su costo
+
+- **Entrada asíncrona (API Gateway → SNS → SQS → Lambda).** La entrada síncrona acoplaba la latencia del webhook a la inferencia y no absorbía ráfagas ni reintentos. Ahora sí lo hace, a cambio de más piezas. Un solo dueño del historial (la memoria del agente) y otro del estado efímero (DynamoDB con TTL de 24 h).
+- **Seguridad por IP de origen.** El diseño asumía un token en el webhook y rechazaba todo lo que no lo trajera. Al conectar el webhook real se vio que el proveedor no envía ninguno: el rechazo descartaba el 100 % del tráfico legítimo. Se cambió a una política del API Gateway que solo admite las IP de salida del proveedor. La Lambda pierde superficie (ya no necesita leer secretos), a cambio de depender de que el proveedor mantenga esas IP.
+
+**Comprobado de punta a punta:** la memoria recuerda datos entre turnos, una FAQ se entrega por WhatsApp sin invocar el Runtime y un origen no autorizado recibe 403.
+
+> Prompts, base de conocimiento, identificadores y código son del cliente. Aquí solo describo el patrón.

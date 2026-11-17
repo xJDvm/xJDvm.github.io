@@ -1,0 +1,76 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import CaseArt from './CaseArt.astro';
+import Metrics from './Metrics.astro';
+import DecisionCard from './DecisionCard.astro';
+import { decisions } from '../i18n/decisions';
+import { dict, paths, EMAIL, type Lang } from '../i18n';
+import { getAllCases, blockClass, type Case } from '../lib/cases';
+
+interface Props { lang: Lang; entry: Case; }
+const { lang, entry } = Astro.props;
+const t = dict[lang];
+const d = entry.data;
+const { Content } = await render(entry);
+const siblings = (await getAllCases(lang)).filter((c) => c.data.kind === d.kind);
+const idx = siblings.findIndex((c) => c.data.key === d.key);
+const hasNav = siblings.length > 1;
+const prev = siblings[(idx - 1 + siblings.length) % siblings.length];
+const next = siblings[(idx + 1) % siblings.length];
+const back = d.kind === 'case' ? `${paths.home(lang)}#trabajo` : `${paths.home(lang)}#experiencia`;
+const alternates = { es: paths.case('es', d.key), en: paths.case('en', d.key) };
+const title = `${d.title} — Juan Diego Valdés M.`;
+const caseDecisions = decisions[lang].filter((x) => x.case === d.key);
+---
+<Base lang={lang} title={title} description={d.summary} alternates={alternates} ogType="article">
+  <article aria-labelledby="case-title">
+    <header class={`case-hero ${blockClass(d.color)}`}>
+      <div class="wrap">
+        <div>
+          <p class="crumbs mono"><a href={back}>{t.caseBack}</a></p>
+          <p class="idx mono">{d.label} · {d.period}</p>
+          <h1 id="case-title">{d.title}</h1>
+          <p class="sum">{d.summary}</p>
+        </div>
+        <div class="vis">
+          <div class="shot"><CaseArt k={d.key} lang={lang} /></div>
+          <p class="metric"><b>{d.sticker.value}</b><span>{d.sticker.label}</span></p>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap prose-wrap">
+      <div class="prose-col">
+        {caseDecisions.length > 0 && (
+          <section class="case-decs" aria-labelledby="case-decs-h">
+            <h2 id="case-decs-h">{t.dec.caseH}</h2>
+            <p class="case-decs-p">{t.dec.caseP}</p>
+            {caseDecisions.map((x) => <DecisionCard d={x} lang={lang} link={false} />)}
+          </section>
+        )}
+        <div class="prose">
+          <Content />
+        </div>
+      </div>
+      <aside class="aside" aria-label={t.facts.stack}>
+        <dl class="facts">
+          <div class="key"><dt>{t.facts.decision}</dt><dd>{d.decision}</dd></div>
+          <div><dt>{t.facts.problem}</dt><dd>{d.problem}</dd></div>
+          <div><dt>{t.facts.role}</dt><dd>{d.role}</dd></div>
+          <div class="res"><dt>{t.facts.result}</dt><dd>{d.result}</dd></div>
+          <div><dt>{t.facts.period}</dt><dd>{d.period}</dd></div>
+        </dl>
+        <Metrics items={d.metrics} label={t.facts.metrics} />
+        <ul class="chips" aria-label={t.facts.stack}>{d.stack.map((s) => <li>{s}</li>)}</ul>
+        <Metrics items={d.footprint} label={t.facts.footprint} note={t.facts.footprintNote} variant="footprint" />
+      </aside>
+    </div>
+
+    <div class="wrap next">
+      {hasNav && <a class="btn alt" href={paths.case(lang, prev.data.key)}><span aria-hidden="true">←</span> {t.casePrev}: {prev.data.short}</a>}
+      <a class="btn hot" href={`mailto:${EMAIL}?subject=${encodeURIComponent(d.title)}`}>{t.caseCtaBtn}</a>
+      {hasNav && <a class="btn" href={paths.case(lang, next.data.key)}>{t.caseNext}: {next.data.short} <span class="arr" aria-hidden="true">→</span></a>}
+    </div>
+  </article>
+</Base>

@@ -1,0 +1,14 @@
+---
+/* Lista de cifras de un caso. Si no hay datos, no se renderiza nada.
+   variant "impact" = métricas de negocio; "footprint" = huella técnica contada en los repositorios. */
+interface Props { items?: { value: string; label: string }[]; label: string; note?: string; variant?: 'impact' | 'footprint'; }
+const { items, label, note, variant = 'impact' } = Astro.props;
+---
+{items && items.length > 0 && (
+  <figure class={`figs figs-${variant}`}>
+    <figcaption><span class="mono">{label}</span>{note && <small>{note}</small>}</figcaption>
+    <ul>
+      {items.map((m) => <li><b>{m.value}</b><span>{m.label}</span></li>)}
+    </ul>
+  </figure>
+)}

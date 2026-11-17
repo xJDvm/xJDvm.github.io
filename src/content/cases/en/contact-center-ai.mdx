@@ -1,0 +1,61 @@
+---
+key: contact-center-ai
+lang: en
+order: 1
+title: AI agents for a contact center
+short: Contact center agents
+label: 01 — Retail · Contact center
+period: Apr — Sep 2026
+summary: Sales, reception and support agents on Respond.io and n8n, governed as code, and the migration of the sales agent to Amazon Bedrock AgentCore with Strands, for a retail client in Latin America.
+problem: Three conversational agents lived as prompts, workflows and a knowledge base spread across two platforms, with two environments that had to stay aligned without disrupting customer service.
+decision: Treat the agents as code. There is one catalog per environment, read-only pulls, dry-run publishing until confirmed and a shared regression suite. In the migration, closed FAQs are answered deterministically from DynamoDB without calling the model.
+role: Sole author of both repositories, the agent version control (Apr–Sep 2026) and the AgentCore migration (Sep 2026, 14 ADRs).
+result: Three agents handling sales, reception and support, with controlled promotions between environments. The sales agent also runs on AgentCore with memory across turns, FAQs answered without calling the model, and unauthorized origins rejected.
+tag: AI
+stack: [Python, n8n, Respond.io, Bedrock AgentCore, Strands Agents, Claude Haiku 4.5, AWS SAM, API Gateway, SNS, SQS, Lambda, DynamoDB]
+sticker: { value: '14 ADRs', label: 'in the AgentCore migration' }
+footprint:
+  - { value: '77 of 77', label: 'commits across both repos (sole author)' }
+  - { value: '12', label: 'versioned n8n workflows (3 + 9 sub)' }
+  - { value: '6', label: 'agent tools on AgentCore' }
+  - { value: '221', label: 'unit test cases (AgentCore)' }
+  - { value: '10', label: 'regression cases in 2 suites' }
+  - { value: '14', label: 'ADRs' }
+color: wine
+---
+
+## Context
+
+The client’s contact center serves customers over WhatsApp and web through Respond.io. Three AI agents run on top of it, for **sales**, **reception** and **support**. Their behavior lives in two places: Respond.io agents and n8n workflows, plus a knowledge base.
+
+## Part 1: agents as code
+
+The risk wasn’t technical, it was operational: hand-editing a prompt in the wrong environment and finding out from a customer. I built a versioned controller in Python with these rules:
+
+- **One catalog per environment** holding IDs, endpoints and *references* to secrets, never their values.
+- **Pulls use `GET` only.** Publishing is a separate operation, **dry-run by default**, that requires `--apply` and confirmation.
+- **Canonical behavior kept apart from snapshots**: what’s portable in the n8n workflows on one side, what is published in each environment on the other.
+- **A shared regression suite** for all three agents.
+
+That’s how improvements were promoted, such as the web greeting, timeout recovery for the receptionist, synchronous handoff to a human agent and service policies read from the knowledge base.
+
+## Part 2: migrating to Bedrock AgentCore
+
+The sales agent moved from n8n + Respond.io to **Amazon Bedrock AgentCore** with **Strands Agents**, in parallel and without touching live operations.
+
+1. Respond.io sends a webhook to API Gateway, restricted by IP and VPC.
+2. SNS and SQS, with a dead-letter queue, decouple the intake.
+3. A normalizer Lambda deduplicates and classifies. If the message is a **closed FAQ, it answers from DynamoDB without calling the LLM**.
+4. Otherwise it invokes the sales agent Runtime (Claude Haiku 4.5), with shared AgentCore memory and six tools: quotes, stock and price, delivery tracking, handoff to a human, knowledge-base search and warranty lookup.
+5. The reply goes back to the customer through the Respond.io MCP server.
+
+I wrote **14 ADRs**. They include deterministic FAQ answers, the asynchronous ingress and the decision not to use Docker, ECR or CDK. One more, a Runtime per agent, is still a proposal, and I don’t count it as a decision made.
+
+### Other decisions and what they cost
+
+- **Asynchronous ingress (API Gateway → SNS → SQS → Lambda).** The synchronous ingress tied webhook latency to inference and couldn’t absorb bursts or retries. Now it can, at the price of more moving parts. One owner for history (the agent’s memory) and another for ephemeral state (DynamoDB with a 24 h TTL).
+- **Security by source IP.** The design assumed a webhook token and rejected anything without one. Once the real webhook was connected, it turned out the provider sends none: the check was dropping 100% of legitimate traffic. It was replaced by an API Gateway policy that only admits the provider’s egress IPs. The Lambda loses surface (it no longer reads secrets), in exchange for depending on the provider keeping those IPs.
+
+**Verified end to end:** memory recalls facts across turns, an FAQ is delivered over WhatsApp without invoking the Runtime, and an unauthorized origin gets a 403.
+
+> Prompts, knowledge base, identifiers and code belong to the client. Here I only describe the pattern.

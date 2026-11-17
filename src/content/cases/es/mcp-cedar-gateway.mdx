@@ -1,0 +1,63 @@
+---
+key: mcp-cedar-gateway
+lang: es
+order: 3
+title: MCP + AgentCore Gateway con Cedar
+short: MCP con políticas Cedar
+label: 03 — Herramienta interna
+period: ago — sep 2026
+summary: Un agente que consulta y registra horas en la herramienta interna de seguimiento de tiempo de la consultora, en español y desde Google Chat, con políticas Cedar que limitan lo que puede tocar.
+problem: Registrar horas exigía entrar a una herramienta legada. Darle esa API a un agente de IA abría la puerta a mutaciones accidentales o repetidas.
+decision: Poner AgentCore Gateway delante de la API con una política Cedar activa y default-deny que solo permite 10 acciones, ninguna de borrado, y cada mutación pide confirmación y es idempotente (DynamoDB).
+role: Autor único. Hice la prueba de concepto, 10 Lambdas adaptadoras en Node 22 con OpenAPI 3.1, el agente en Python con Strands, el canal de Google Chat (verificación de JWT y deduplicación) y la documentación.
+result: El gateway, la política y el agente funcionan juntos. El agente usa 10 herramientas MCP y el diseño queda documentado en 18 ADR, con casos de prueba para creación, replay idempotente, conflicto 409 y modificación.
+stack: [AgentCore Gateway, Cedar, MCP, AgentCore Runtime, Strands, Node 22, Python, Lambda, DynamoDB, OpenAPI 3.1, AWS SAM, Google Chat]
+sticker: { value: '10', label: 'herramientas MCP tras una política default-deny' }
+tag: MCP
+footprint:
+  - { value: '9 de 9', label: 'commits (autor único)' }
+  - { value: '10', label: 'herramientas MCP (GatewayTargets)' }
+  - { value: '1 · 10', label: 'política Cedar default-deny · acciones permitidas' }
+  - { value: '10', label: 'Lambdas adaptadoras (Node 22)' }
+  - { value: '18', label: 'ADR' }
+  - { value: '78', label: 'casos de prueba del agente' }
+color: teal
+---
+
+## Contexto
+
+La consultora usa una herramienta interna para registrar horas contra proyectos y tickets. La idea era poder escribir en Google Chat algo como *«regístrame 3 horas en el ticket de ayer»* y que pasara, sin abrir la herramienta.
+
+El reto no era que el modelo entendiera la frase, sino **qué le dejamos hacer** cuando la entiende mal.
+
+## Arquitectura
+
+```text
+Usuario → Google Chat → Lambda receptora (verifica JWT, deduplica)
+        → AgentCore Runtime (agente Python/Strands)
+        → AgentCore Gateway (MCP / JSON-RPC, AWS_IAM + política Cedar)
+        → 10 Lambdas adaptadoras (Node 22, OpenAPI 3.1)
+        → API de la herramienta de horas
+```
+
+- **Política Cedar default-deny:** una sola sentencia `permit` con las 10 acciones permitidas. No existe ninguna de borrado. Cuando una política deniega algo, el agente recibe un error JSON-RPC `-32002`, no un silencio.
+- **Idempotencia en DynamoDB** (con SSE, PITR y TTL): repetir la misma mutación no crea dos registros.
+- **Confirmación antes de mutar:** el agente propone y el usuario confirma.
+- **Herramientas como contratos:** cada Lambda adaptadora publica su esquema OpenAPI 3.1 y el Gateway lo expone como herramienta MCP.
+
+### Decisiones que cambiaron con la medición
+
+- **Modelo por configuración.** El identificador del modelo no está en el código, porque disponibilidad, latencia y costo dependen de la cuenta y la región. Con Nova Lite las respuestas salían toscas y repetitivas; se pasó a Claude Haiku 4.5 y se aceptaron dos lecturas de catálogo por listado de horas a cambio de la calidad.
+- **Memoria versionada.** Al añadir memoria de preferencias se creó una memoria nueva y versionada en lugar de modificar la anterior, para migrar sin borrar nada.
+- **Auditoría sin contenido**, con cifrado, recuperación a un punto en el tiempo y TTL de 180 días, escrita en modo best-effort para no bloquear la respuesta.
+
+## Verificación
+
+- **78 casos de prueba** del agente en 10 archivos y 2 scripts de verificación del contrato del gateway.
+- Las pruebas controladas cubren creación, replay idempotente (no duplica), conflicto 409 y modificación.
+
+## Lo que aprendí
+
+Un gateway con políticas declarativas cambia la conversación sobre seguridad. Ya no se trata de confiar en el prompt, sino de que el agente *no pueda* llamar a lo que no está permitido. Combinado con idempotencia, un error del modelo se queda en una respuesta rara y no en datos corruptos.
+
+> El código es de la consultora y no lo publico. Si sirve, puedo reimplementar el patrón con una API ficticia.

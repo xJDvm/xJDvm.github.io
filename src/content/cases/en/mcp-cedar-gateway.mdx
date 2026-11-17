@@ -1,0 +1,63 @@
+---
+key: mcp-cedar-gateway
+lang: en
+order: 3
+title: MCP + AgentCore Gateway with Cedar
+short: MCP with Cedar policies
+label: 03 — Internal tool
+period: Aug — Sep 2026
+summary: An agent that queries and logs hours in the consultancy’s internal time-tracking tool, in Spanish and from Google Chat, with Cedar policies limiting what it can touch.
+problem: Logging hours meant going into a legacy tool. Giving that API to an AI agent opened the door to accidental or repeated mutations.
+decision: Put AgentCore Gateway in front of the API with an active, default-deny Cedar policy that only allows 10 actions, none of which deletes, and every mutation needs confirmation and is idempotent (DynamoDB).
+role: Sole author. I built the proof of concept, 10 adapter Lambdas in Node 22 with OpenAPI 3.1, the Python agent with Strands, the Google Chat channel (JWT verification and deduplication) and the documentation.
+result: The gateway, the policy and the agent work together. The agent uses 10 MCP tools and the design is documented in 18 ADRs, with test cases for create, idempotent replay, 409 conflict and update.
+stack: [AgentCore Gateway, Cedar, MCP, AgentCore Runtime, Strands, Node 22, Python, Lambda, DynamoDB, OpenAPI 3.1, AWS SAM, Google Chat]
+sticker: { value: '10', label: 'MCP tools behind a default-deny policy' }
+tag: MCP
+footprint:
+  - { value: '9 of 9', label: 'commits (sole author)' }
+  - { value: '10', label: 'MCP tools (GatewayTargets)' }
+  - { value: '1 · 10', label: 'default-deny Cedar policy · allowed actions' }
+  - { value: '10', label: 'adapter Lambdas (Node 22)' }
+  - { value: '18', label: 'ADRs' }
+  - { value: '78', label: 'agent test cases' }
+color: teal
+---
+
+## Context
+
+The consultancy uses an internal tool to log hours against projects and tickets. The idea was to type something like *“log 3 hours on yesterday’s ticket”* in Google Chat and have it happen, without opening the tool.
+
+The challenge wasn’t getting the model to understand the sentence. It was deciding **what we let it do** when it misunderstands.
+
+## Architecture
+
+```text
+User → Google Chat → receiver Lambda (verifies JWT, deduplicates)
+     → AgentCore Runtime (Python/Strands agent)
+     → AgentCore Gateway (MCP / JSON-RPC, AWS_IAM + Cedar policy)
+     → 10 adapter Lambdas (Node 22, OpenAPI 3.1)
+     → time-tracking API
+```
+
+- **Default-deny Cedar policy:** a single `permit` statement listing the 10 allowed actions, with no delete operation at all. When a policy denies something, the agent gets a JSON-RPC `-32002` error, not silence.
+- **Idempotency in DynamoDB** (with SSE, PITR and TTL): repeating the same mutation doesn’t create two records.
+- **Confirmation before mutating:** the agent proposes and the user confirms.
+- **Tools as contracts:** each adapter Lambda publishes its OpenAPI 3.1 schema and the Gateway exposes it as an MCP tool.
+
+### Decisions that changed with measurement
+
+- **Model by configuration.** The model id isn’t in the code, because availability, latency and cost depend on the account and region. Nova Lite gave clumsy, repetitive answers; it moved to Claude Haiku 4.5, accepting two catalog reads per time listing in exchange for quality.
+- **Versioned memory.** Adding preference memory meant creating a new, versioned memory instead of modifying the old one, so the migration deletes nothing.
+- **Audit without content**, with encryption, point-in-time recovery and a 180-day TTL, written best-effort so it never blocks the reply.
+
+## Verification
+
+- **78 agent test cases** in 10 files, plus 2 gateway contract verification scripts.
+- Controlled tests cover create, idempotent replay (no duplicates), 409 conflict and update.
+
+## What I learned
+
+A gateway with declarative policies changes the security conversation. It’s no longer about trusting the prompt. The agent simply *can’t* call what isn’t allowed. Combined with idempotency, a model mistake ends as an odd reply instead of corrupted data.
+
+> The code belongs to the consultancy and I don’t publish it. If useful, I can reimplement the pattern against a mock API.
