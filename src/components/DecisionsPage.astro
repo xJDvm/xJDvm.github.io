@@ -1,0 +1,27 @@
+---
+/* Página de detalle: las 8 decisiones de ingeniería con todo el contenido técnico (servicios, código, costos estimados). */
+import Base from '../layouts/Base.astro';
+import DecisionCard from './DecisionCard.astro';
+import { decisions } from '../i18n/decisions';
+import { dict, paths, type Lang } from '../i18n';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = dict[lang];
+const alternates = { es: paths.decisions('es'), en: paths.decisions('en') };
+---
+<Base lang={lang} title={t.decPage.title} description={t.decPage.desc} alternates={alternates} ogType="article">
+  <section class="decs dec-page" aria-labelledby="h-dec-page">
+    <div class="wrap sec-head">
+      <div>
+        <p class="crumbs mono"><a href={`${paths.home(lang)}#decisiones`}>{t.decPage.back}</a></p>
+        <p class="num mono">{t.dec.num}</p>
+        <h1 id="h-dec-page">{t.dec.h[0]}<br />{t.dec.h[1]}</h1>
+      </div>
+      <p>{t.dec.p}</p>
+    </div>
+    <div class="wrap dec-grid">
+      {decisions[lang].map((d) => <DecisionCard d={d} lang={lang} level="h2" />)}
+    </div>
+  </section>
+</Base>

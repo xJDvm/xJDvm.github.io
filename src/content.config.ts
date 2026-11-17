@@ -27,6 +27,15 @@ const cases = defineCollection({
     footprint: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     /** Cifras reales de impacto de negocio. Opcional: si está vacío, la sección de métricas no se renderiza. */
     metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    /** Versión en lenguaje llano para la home (sin nombres de servicios). El detalle técnico queda en la página del caso. */
+    home: z.object({
+      title: z.string(),
+      summary: z.string(),
+      problem: z.string(),
+      result: z.string(),
+      tags: z.array(z.string()).max(3),
+      sticker: z.object({ value: z.string(), label: z.string() }),
+    }).optional(),
   }),
 });
 
@@ -41,6 +50,9 @@ const side = defineCollection({
     year: z.string(),
     stack: z.array(z.string()),
     link: z.string().url().optional(),
+    /** Resumen llano para la tarjeta; el cuerpo y el stack quedan en «Detalle técnico». */
+    summary: z.string(),
+    tags: z.array(z.string()).max(3),
   }),
 });
 

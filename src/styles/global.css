@@ -327,6 +327,17 @@ section { position: relative; }
 .metric span { font: 700 .66rem/1.3 var(--mono); text-transform: uppercase; }
 @media (max-width: 520px) { .metric { right: 6px; } }
 
+/* Panel llano de cada caso en la home (sustituye al diagrama técnico, que vive en la página del caso) */
+.shot.plain { display: grid; align-content: end; gap: 10px; min-height: clamp(220px, 26vw, 340px); padding: clamp(22px, 3.5vw, 40px); background: var(--halftone) 0 0 / 9px 9px, var(--surface); }
+.shot.plain .mono { font-weight: 700; font-size: .75rem; text-transform: uppercase; color: var(--teal-text); }
+.shot.plain b { font: 800 clamp(2.6rem, 6vw, 5rem)/.95 var(--display); letter-spacing: -.03em; overflow-wrap: anywhere; }
+.shot.plain .plain-l { font: 600 clamp(1rem, 1.4vw, 1.25rem)/1.3 var(--display); color: var(--sub); max-width: 26ch; }
+.mini-sum { color: var(--sub); font-size: .95rem; }
+.mini-tech { border-top: 2px solid var(--rule); padding-top: 10px; }
+.mini-tech summary { cursor: pointer; font-size: .75rem; font-weight: 700; color: var(--teal-text); text-transform: uppercase; }
+.mini-tech[open] summary { margin-bottom: 8px; }
+.mini-tech .mini-body p { font-size: .88rem; }
+
 /* ---------- Decisiones de ingeniería ---------- */
 .decs { border-top: var(--b); padding-bottom: clamp(48px, 7vw, 96px); }
 .dec-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
@@ -365,6 +376,26 @@ section { position: relative; }
 .figs-footprint { border-width: 2px; border-style: dashed; box-shadow: none !important; }
 .figs-footprint b { font-size: clamp(1rem, 1.4vw, 1.15rem); }
 .figs-footprint li { padding: 7px 12px; }
+
+/* Cómo pienso (home, lenguaje llano) */
+.think-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .think-grid { grid-template-columns: 1fr; } }
+.think { position: relative; min-width: 0; border: var(--b); border-radius: var(--r); background: var(--surface); box-shadow: var(--sh); padding: 20px 22px 22px; display: grid; gap: 12px; }
+.think:nth-child(even) { box-shadow: 6px 6px 0 var(--shc-2); }
+.think-n { font-weight: 800; font-size: .8rem; color: var(--teal-text); }
+.think h3 { font: 800 clamp(1.4rem, 2.4vw, 1.9rem)/1.08 var(--display); letter-spacing: -.02em; }
+.think dl { margin: 0; display: grid; gap: 10px; }
+.think dl > div { display: grid; gap: 2px; }
+.think dt { font: 700 .7rem/1.5 var(--mono); text-transform: uppercase; color: var(--muted); }
+.think dd { margin: 0; color: var(--sub); }
+.think .key { border-left: 5px solid var(--red); padding-left: 12px; }
+.think .key dt { color: var(--fg); }
+.think .key dd { color: var(--fg); font-weight: 600; }
+.think-link { justify-self: start; font-size: .8rem; font-weight: 700; color: var(--teal-text); text-underline-offset: 3px; }
+.think-more { margin-top: 28px; }
+.dec-page { border-top: 0; }
+.sec-head h1 { font-size: clamp(2.3rem, 6vw, 5rem); font-weight: 800; }
+.case-decs-more { font: 700 .8rem/1.4 var(--mono); color: var(--teal-text); text-underline-offset: 3px; justify-self: start; }
 
 /* ---------- Selección de proyectos ---------- */
 .side { border-top: var(--b); background: var(--halftone) 0 0 / 9px 9px, var(--bg); padding-bottom: clamp(48px, 7vw, 96px); }

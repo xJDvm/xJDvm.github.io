@@ -22,6 +22,13 @@ footprint:
   - { value: '18', label: 'ADR' }
   - { value: '78', label: 'casos de prueba del agente' }
 color: teal
+home:
+  title: "Asistente para registrar horas, con reglas estrictas"
+  summary: "Un asistente en Google Chat que consulta y registra horas de trabajo en la herramienta interna de la consultora, escribiéndole en español."
+  problem: "Darle a una IA acceso a una herramienta real abre la puerta a cambios por error o repetidos."
+  result: "El asistente solo puede hacer 10 acciones permitidas, ninguna de borrar, pide confirmación antes de cambiar algo y no registra dos veces lo mismo."
+  tags: ["IA", "Seguridad", "Automatización"]
+  sticker: {"value": "0", "label": "acciones de borrado permitidas"}
 ---
 
 ## Contexto

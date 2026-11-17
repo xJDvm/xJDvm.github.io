@@ -6,5 +6,7 @@ kind: "Company website"
 role: "Architect & developer"
 year: "2025 — 2026"
 stack: ["Next.js 14", "TypeScript", "Tailwind", "Framer Motion"]
+summary: "Website for a creative studio focused on visual identity and social media, with animations and smooth navigation."
+tags: ["Web", "Design", "Animation"]
 ---
 Website for a creative studio focused on visual identity and social media, built together with its developers.

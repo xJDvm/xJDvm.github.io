@@ -47,6 +47,7 @@ const caseDecisions = decisions[lang].filter((x) => x.case === d.key);
             <h2 id="case-decs-h">{t.dec.caseH}</h2>
             <p class="case-decs-p">{t.dec.caseP}</p>
             {caseDecisions.map((x) => <DecisionCard d={x} lang={lang} link={false} />)}
+            <a class="case-decs-more" href={paths.decisions(lang)}>{t.think.more} →</a>
           </section>
         )}
         <div class="prose">

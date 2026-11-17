@@ -7,10 +7,10 @@ const og = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" vi
 <rect width="1200" height="630" fill="#0B0B0F"/>
 <g fill="none" stroke="#ECECF1" stroke-opacity=".08" stroke-width="2"><path d="M1200 0L0 630M1200 0L300 630M1200 0L600 630M1200 0L900 630M1200 0L0 315M960 0A240 240 0 0 0 1200 240M720 0A480 480 0 0 0 1200 480M480 0A720 720 0 0 0 1200 720"/></g>
 <rect x="0" y="560" width="1200" height="70" fill="#9B1030"/>
-<text x="64" y="606" font-family="Menlo, monospace" font-size="26" font-weight="700" fill="#FFFFFF">TypeScript · Python · AWS · AgentCore · MCP</text>
+<text x="64" y="606" font-family="Menlo, monospace" font-size="26" font-weight="700" fill="#FFFFFF">Producto · IA · Nube · Costos razonables</text>
 <circle cx="96" cy="112" r="30" fill="#E0202F" stroke="#ECECF1" stroke-width="6"/>
 <text x="146" y="126" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="800" fill="#ECECF1">Juan Diego Valdés M.</text>
-<text x="64" y="270" font-family="Helvetica, Arial, sans-serif" font-size="92" font-weight="800" fill="#ECECF1" letter-spacing="-3">Full-stack developer</text>
+<text x="64" y="270" font-family="Helvetica, Arial, sans-serif" font-size="92" font-weight="800" fill="#ECECF1" letter-spacing="-3">Software engineer</text>
 <g transform="rotate(-2 300 380)"><rect x="72" y="326" width="290" height="104" rx="14" fill="#19C2BE"/><rect x="64" y="318" width="290" height="104" rx="14" fill="#E0202F" stroke="#ECECF1" stroke-width="6"/>
 <text x="92" y="396" font-family="Helvetica, Arial, sans-serif" font-size="82" font-weight="800" fill="#FFFFFF">IA · AI</text></g>
 <g transform="rotate(1.5 600 380)"><rect x="390" y="326" width="290" height="104" rx="14" fill="#E0202F"/><rect x="382" y="318" width="290" height="104" rx="14" fill="#19C2BE" stroke="#ECECF1" stroke-width="6"/>
