@@ -1,36 +1,46 @@
 ---
-/* Escena 3D ligera (solo CSS 3D, sin WebGL ni dependencias): cuatro capas de arquitectura apiladas en isométrico.
-   Sin JS se ve estática; con JS (cargado al entrar en pantalla) gira con el puntero y las capas se separan al pasar.
-   Con prefers-reduced-motion no hay animación. Es una imagen para lectores de pantalla (role="img" + aria-label). */
+/* Escena 3D ligera (solo CSS 3D, sin WebGL ni dependencias): el recorrido real de un mensaje en el caso 01
+   (asistentes de IA para atención al cliente), en cuatro capas apiladas en isométrico y un punto que baja por ellas.
+   Sin JS se ve estática; con JS (cargado al entrar en pantalla) gira con el puntero fino y las capas se separan al pasar.
+   Con prefers-reduced-motion no hay animación. La escena es una imagen para lectores de pantalla (role="img" + aria-label);
+   el enlace al caso va fuera de ella, en el pie. */
 import { iconSvg, CLOUD_ICONS, type CloudIconName } from '../lib/cloud-icons';
-import { dict, type Lang } from '../i18n';
+import { dict, paths, type Lang } from '../i18n';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
 const t = dict[lang];
-const layers: CloudIconName[][] = [
-  ['apigw', 'whatsapp', 'googlechat'],
-  ['sns', 'sqs', 'eventbridge'],
-  ['lambda', 'agentcore', 'workers'],
-  ['aurora', 'dynamodb', 'postgresql'],
+type Tile = { n: CloudIconName; label?: string };
+const layers: Tile[][] = [
+  [{ n: 'whatsapp' }, { n: 'chat', label: 'Respond.io' }],
+  [{ n: 'apigw' }, { n: 'sns' }, { n: 'sqs' }],
+  [{ n: 'lambda' }, { n: 'dynamodb' }],
+  [{ n: 'agentcore', label: 'AgentCore' }, { n: 'claude', label: 'Claude Haiku' }],
 ];
+const caseKey = 'contact-center-ai';
 ---
-<div class="scene" data-scene data-fx role="img" aria-label={t.scene3d}>
-  <div class="rig">
-    {layers.map((icons, i) => (
-      <div class={`layer l${i}`} style={`--z:${3 - i}`}>
-        <span class="layer-name mono">{String(i + 1).padStart(2, '0')} · {t.sceneLayers[i]}</span>
-        <div class="layer-icons">
-          {icons.map((n) => (
-            <span class="s-tile">
-              <span class={`s-ico k-${CLOUD_ICONS[n].kind}`} set:html={iconSvg(n, 30)} />
-              <span class="s-name">{CLOUD_ICONS[n].name.replace(/^(Amazon|AWS) /, '')}</span>
-            </span>
-          ))}
+<figure class="scene-fig">
+  <div class="scene" data-scene data-fx role="img" aria-label={t.scene3d}>
+    <div class="rig">
+      {layers.map((tiles, i) => (
+        <div class={`layer l${i}`} style={`--z:${3 - i}`}>
+          <span class="layer-name mono">{String(i + 1).padStart(2, '0')} · {t.sceneLayers[i]}</span>
+          <div class="layer-icons">
+            {tiles.map(({ n, label }) => (
+              <span class="s-tile">
+                <span class={`s-ico k-${CLOUD_ICONS[n].kind}`} set:html={iconSvg(n, 30)} />
+                <span class="s-name">{label ?? CLOUD_ICONS[n].name.replace(/^(Amazon|AWS) /, '')}</span>
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
-    ))}
-    <span class="beam" aria-hidden="true"></span>
+      ))}
+      <span class="beam" aria-hidden="true"></span>
+    </div>
   </div>
   <p class="scene-hint mono" aria-hidden="true">{t.sceneHint}</p>
-</div>
+  <figcaption class="scene-cap">
+    <span>{t.sceneCap}</span>
+    <a href={paths.case(lang, caseKey)}>{t.sceneLink}<span class="sr-only">: {t.sceneCap}</span> <span aria-hidden="true">→</span></a>
+  </figcaption>
+</figure>

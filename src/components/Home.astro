@@ -1,53 +1,25 @@
 ---
-import { render } from 'astro:content';
+/* Home como resumen: hero con pruebas, 3 casos compactos, más casos en una fila, hábitos en una línea,
+   experiencia resumida, sobre mí y contacto. El detalle técnico vive en cada caso y en /decisiones/. */
 import Base from '../layouts/Base.astro';
-import ApiConsole from './ApiConsole';
 import Icon from './Icon.astro';
-import Flow from './Flow.astro';
-import Screenshot from './Screenshot.astro';
 import Gallery from './Gallery.astro';
 import Scene3D from './Scene3D.astro';
-import { flows, sideFlows } from '../lib/flows';
-import { shots, galleries } from '../lib/shots';
-import { dict, paths, EMAIL, GITHUB, LINKEDIN, type Lang, type ConsoleEndpoint } from '../i18n';
-import { getCases, getSide, blockClass } from '../lib/cases';
+import { galleries } from '../lib/shots';
+import { dict, paths, EMAIL, GITHUB, LINKEDIN, type Lang } from '../i18n';
+import { getAllCases, getCases, getSide } from '../lib/cases';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
 const t = dict[lang];
 const cases = await getCases(lang);
-const sideAll = await getSide(lang);
-const side = await Promise.all(sideAll.slice(0, 3).map(async (m) => ({ m, Content: (await render(m)).Content })));
-const sideRest = sideAll.slice(3);
-const es = lang === 'es';
-const principle = (key: string) => t.think.items.find((x) => x.case === key);
+const featured = cases.slice(0, 3);
+const others = [...cases.slice(3), ...(await getAllCases(lang)).filter((c) => c.data.kind === 'academic')];
+/* De los proyectos propios solo se muestran en la home los que tienen enlace verificable. */
+const linked = (await getSide(lang)).filter((m) => m.data.link);
 const proofHref = (to: string) => (to === 'experiencia' ? '#experiencia' : paths.case(lang, to));
-
-const endpoints: ConsoleEndpoint[] = [
-  {
-    id: 'cases', method: 'GET', path: es ? '/casos' : '/cases', status: 200, sql: es ? 'lee' : 'read', ui: 'list',
-    body: {
-      total: cases.length,
-      items: cases.map((c) => ({
-        name: c.data.title,
-        category: c.data.home?.tags[0] ?? c.data.tag,
-        year: Number(c.data.period.match(/\d{4}(?!.*\d{4})/)?.[0] ?? 0),
-      })),
-    },
-  },
-  {
-    id: 'availability', method: 'GET', path: es ? '/disponibilidad' : '/availability', status: 200, sql: es ? 'lee' : 'read', ui: 'availability',
-    body: es
-      ? { disponible: true, empleo: 'full-stack', freelance: true, enfoque: ['agentes de IA', 'serverless en AWS'], experiencia_anios: 4, nexus_challenge: 'ganador', ubicacion: 'Valencia, VE', zona: 'GMT-4' }
-      : { available: true, role: 'full-stack', freelance: true, focus: ['AI agents', 'AWS serverless'], experience_years: 4, nexus_challenge: 'winner', location: 'Valencia, VE', timezone: 'GMT-4' },
-  },
-  {
-    id: 'contact', method: 'POST', path: es ? '/contacto' : '/contact', status: 201, sql: 'INSERT', ui: 'contact',
-    body: es
-      ? { ok: true, canal: 'email', para: EMAIL, siguiente_paso: 'Cuéntame el puesto o el proyecto.' }
-      : { ok: true, channel: 'email', to: EMAIL, next_step: 'Tell me about the role or the project.' },
-  },
-];
+const accent = ['var(--wine)', 'var(--red)', 'var(--teal)'];
+const accentFg = ['#FFFFFF', '#FFFFFF', '#0B0B0F'];
 const alternates = { es: paths.home('es'), en: paths.home('en') };
 ---
 <Base lang={lang} alternates={alternates}>
@@ -60,78 +32,92 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
           {t.h1a} <span class="hl">{t.h1b}</span> {t.h1and} <span class="hl p">{t.h1c}</span>
         </h1>
         <p class="lede">{t.lede}</p>
-        <ul class="hero-stack" aria-label={t.stackLabel}>{t.heroStack.map((s) => <li>{s}</li>)}</ul>
         <div class="cta">
           <a class="btn hot" href={t.hireHref}>{t.ctaHire}</a>
           <a class="btn alt" href={t.freelanceHref}>{t.ctaFreelance}</a>
           <a class="btn ghost" href="#trabajo">{t.ctaWork} <span class="arr" aria-hidden="true">↓</span></a>
         </div>
-        <p class="hero-meta mono">
+        <ul class="proofs" aria-label={t.proofsLabel}>
+          {t.proofs.map((p) => (
+            <li>
+              <a href={proofHref(p.to)}>
+                <span class="proof-k">{p.k}</span>
+                <b>{p.v}</b>
+                <span class="proof-d">{p.d}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="hero-meta">
           {t.meta.map((m) => <span>{m}</span>)}
           <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-          {/* TODO(usuario): enlace al CV en PDF cuando exista (no publicar hasta tenerlo). */}
         </p>
       </div>
       <Scene3D lang={lang} />
     </div>
-    <div class="wrap">
-      <ul class="proofs" aria-label={t.proofsLabel}>
-        {t.proofs.map((p) => (
-          <li>
-            <a href={proofHref(p.to)}>
-              <span class="mono">{p.k}</span>
-              <b>{p.v}</b>
-              <span class="proof-d">{p.d}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
   </section>
 
-  <section id="trabajo" aria-labelledby="h-trabajo">
+  <section id="trabajo" class="work" aria-labelledby="h-trabajo">
     <div class="wrap sec-head reveal">
       <div><p class="num mono">{t.workNum}</p><h2 id="h-trabajo">{t.workH[0]}<br />{t.workH[1]}</h2></div>
       <p>{t.workP}</p>
     </div>
-
-    {cases.map((c, i) => {
-      const d = c.data;
-      const h = d.home ?? { summary: d.summary, problem: d.problem, result: d.result, tags: d.stack.slice(0, 3), sticker: d.sticker };
-      const light = d.color === 'teal' || d.color === 'invert';
-      const flow = flows[lang][d.key]?.home;
-      const shot = shots[d.key]?.home;
-      const pr = principle(d.key);
-      return (
-        <article class={`case ${blockClass(d.color)}${i % 2 ? ' flip' : ''}`} aria-labelledby={`case-${d.key}`}>
-          <div class="wrap">
-            <div class="reveal">
-              <p class="idx">{d.label} · {d.period}</p>
+    <ol class="wrap feat">
+      {featured.map((c, i) => {
+        const d = c.data;
+        const h = d.home ?? { summary: d.summary, problem: d.problem, result: d.result, decision: d.decision, sticker: d.sticker };
+        return (
+          <li class="feat-card reveal" style={`--ac:${accent[i]};--af:${accentFg[i]}`}>
+            <article aria-labelledby={`case-${d.key}`}>
+              <p class="feat-idx">{d.label} · {d.period}</p>
               <h3 id={`case-${d.key}`}>{d.title}</h3>
-              {d.subtitle && <p class="case-sub mono">{d.subtitle}</p>}
-              <p class="sum">{h.summary}</p>
-              <dl class="facts">
-                {pr && <div class="key"><dt>{t.think.principle}</dt><dd><b>{pr.h}.</b> {pr.choice}</dd></div>}
-                <div class="res"><dt>{t.facts.achieved}</dt><dd>{h.result}</dd></div>
+              <dl class="feat-dl">
+                <div><dt>{t.facts.problem}</dt><dd>{h.problem}</dd></div>
+                <div class="feat-key"><dt>{t.dec.labels.decision}</dt><dd>{h.decision ?? d.decision}</dd></div>
               </dl>
-              <a class={`btn more${light ? ' dark' : ''}`} href={paths.case(lang, d.key)}>
+              <p class="feat-stat"><b>{h.sticker.value}</b><span>{h.sticker.label}</span></p>
+              <a class="btn feat-more" href={paths.case(lang, d.key)}>
                 {t.readCase}<span class="sr-only">: {d.title}</span> <span class="arr" aria-hidden="true">→</span>
               </a>
-            </div>
-            <div class="vis reveal">
-              <div class="shot viz" data-tilt data-fx>
-                {shot ? (
-                  <Screenshot src={shot.src} alt={shot.alt[lang]} url={shot.url} caption={shot.caption[lang]} group={`home-${d.key}`} lang={lang} />
-                ) : flow ? (
-                  <Flow steps={flow} caption={t.flowHome} label={`${t.flowHome}: ${d.title}`} lang={lang} />
-                ) : null}
-                <p class="viz-stat"><b>{h.sticker.value}</b><span>{h.sticker.label}</span></p>
+            </article>
+          </li>
+        );
+      })}
+    </ol>
+    <div class="wrap more reveal">
+      <h3 class="more-h">{t.moreH}</h3>
+      <ul class="more-list">
+        {others.map((c) => (
+          <li>
+            <a class="more-card" href={paths.case(lang, c.data.key)}>
+              <span class="more-k">{c.data.label.replace(/^\d+\s—\s/, '')} · {c.data.period}</span>
+              <b>{c.data.title}</b>
+              <span class="more-go">{t.readCase} <span aria-hidden="true">→</span></span>
+            </a>
+          </li>
+        ))}
+        {linked.map((m) => {
+          const key = m.id.split('/').pop()!;
+          const gal = m.data.gallery ? galleries[m.data.gallery] : undefined;
+          return (
+            <li class={gal ? 'more-wide' : ''}>
+              <div class="more-card">
+                <span class="more-k">{m.data.kind} · {m.data.year}</span>
+                <b>{m.data.title}</b>
+                <span class="more-sum">{m.data.summary}</span>
+                <a class="more-go" href={m.data.link} rel="noopener">{t.sideRepo} ↗<span class="sr-only">: {m.data.title}</span></a>
+                {gal && (
+                  <details class="more-shots">
+                    <summary>{t.moreShots}</summary>
+                    <Gallery shots={gal} lang={lang} group={`side-${key}`} sizes="(max-width: 900px) 92vw, 640px" />
+                  </details>
+                )}
               </div>
-            </div>
-          </div>
-        </article>
-      );
-    })}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   </section>
 
   <section id="decisiones" class="decs" aria-labelledby="h-dec">
@@ -143,118 +129,79 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
       {t.steps.map((s) => (
         <li class="habit reveal" style={`--c:${s.c};--f:${s.f}`}>
           <span class="habit-n" aria-hidden="true">{s.n}</span>
-          <p class="mono">{s.k}</p>
-          <h3>{s.h}</h3>
-          <p>{s.p}</p>
+          <div><h3>{s.h}</h3><p>{s.p}</p></div>
         </li>
       ))}
     </ol>
     <p class="wrap think-more reveal"><a class="btn" href={paths.decisions(lang)}>{t.think.more} <span class="arr" aria-hidden="true">→</span></a></p>
-    <div class="wrap console-wrap reveal" id="consola">
-      <div class="console-head">
-        <h3>{t.consoleH}</h3>
-        <p>{t.consoleP}</p>
-      </div>
-      <ApiConsole client:visible copy={t.console} endpoints={endpoints} email={EMAIL} />
-    </div>
-  </section>
-
-  <section id="proyectos" class="side" aria-labelledby="h-side">
-    <div class="wrap sec-head reveal">
-      <div><p class="num mono">{t.sideNum}</p><h2 id="h-side">{t.sideH[0]}<br />{t.sideH[1]}</h2></div>
-      <p>{t.sideP}</p>
-    </div>
-    <div class="wrap side-grid">
-      {side.map(({ m, Content }) => {
-        const key = m.id.split('/').pop()!;
-        const gal = m.data.gallery ? galleries[m.data.gallery] : undefined;
-        const sf = sideFlows[lang][key];
-        return (
-          <article class={`mini reveal${gal ? ' mini-wide' : ''}`} aria-labelledby={`side-${key}`}>
-            <div class="mini-text">
-              <p class="mono kind">{m.data.kind} · {m.data.year}</p>
-              <h3 id={`side-${key}`}>{m.data.title}</h3>
-              <p class="mini-sum">{m.data.summary}</p>
-              <p class="role"><span class="mono">{t.sideRole}</span> {m.data.role}</p>
-              <details class="mini-tech">
-                <summary class="mono">{t.sideTech}</summary>
-                <div class="mini-body"><Content /></div>
-                <ul class="chips" aria-label={t.facts.stack}>{m.data.stack.map((s) => <li>{s}</li>)}</ul>
-              </details>
-              {m.data.link && <a class="mini-link" href={m.data.link} rel="noopener">{t.sideRepo} ↗<span class="sr-only">: {m.data.title}</span></a>}
-            </div>
-            {gal && <Gallery shots={gal} lang={lang} group={`side-${key}`} sizes="(max-width: 900px) 92vw, 640px" />}
-            {!gal && sf && <Flow steps={sf} caption={t.flowArch} label={`${t.flowArch}: ${m.data.title}`} lang={lang} class="flow-mini" />}
-          </article>
-        );
-      })}
-    </div>
-    {sideRest.length > 0 && (
-      <p class="wrap side-more reveal"><span class="mono">{t.sideMore}:</span> {sideRest.map((m, i) => <>{i > 0 && ' · '}<b>{m.data.title}</b> ({m.data.kind.toLowerCase()}, {m.data.year})</>)}</p>
-    )}
   </section>
 
   <section id="experiencia" class="exp" aria-labelledby="h-exp">
     <div class="wrap sec-head reveal">
-      <div><p class="num mono">{t.expNum}</p><h2 id="h-exp">{t.expH[0]}<br />{t.expH[1]}</h2></div>
+      <div><p class="num mono">{t.expNum}</p><h2 id="h-exp">{t.expH.join(' ')}</h2></div>
       <p>{t.expP}</p>
     </div>
     <div class="wrap exp-grid">
-      {t.jobs.map((j) => (
-        <article class="job reveal">
-          <header class="job-head">
-            <p class="mono">{j.when}</p>
-            <h3>{j.title}</h3>
-            <p class="org">{j.org}</p>
-          </header>
-          {j.award && (
-            <div class="job-award">
-              <p class="mono">{j.award.label}</p>
-              <b>{j.award.what}</b>
-              <span>{j.award.detail}</span>
-            </div>
-          )}
-          <p class="job-intro">{j.intro}</p>
-          <ul class="contrib">
-            {j.items.map((it) => (
-              <li><b>{it.what}</b><span>{it.detail}</span><small class="mono">{it.stack}</small></li>
-            ))}
-          </ul>
-        </article>
-      ))}
+      <ol class="timeline">
+        {t.jobs.map((j) => (
+          <li class="job reveal">
+            <header class="job-head">
+              <p class="job-when">{j.when}</p>
+              <h3>{j.title}</h3>
+              <p class="org">{j.org}</p>
+            </header>
+            {j.award && (
+              <div class="job-award">
+                <p class="mono">{j.award.label}</p>
+                <b>{j.award.what}</b>
+                <span>{j.award.detail}</span>
+              </div>
+            )}
+            <p class="job-intro">{j.intro}</p>
+            {j.items.length > 0 && (
+              <details class="job-more">
+                <summary>{t.contribH}</summary>
+                <ul class="contrib">
+                  {j.items.map((it) => (
+                    <li><b>{it.what}</b><span>{it.detail}</span><small class="mono">{it.stack}</small></li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </li>
+        ))}
+      </ol>
       <div class="exp-side">
-        <article class="job reveal">
-          <header class="job-head"><p class="mono">2023 — 2025</p><h3>{t.academicH}</h3></header>
-          <ul class="contrib">
-            {t.academic.map((it) => (
-              <li>
-                <b>{it.what}</b><span>{it.detail}</span><small class="mono">{it.stack}</small>
-                {it.key && <a href={paths.case(lang, it.key)}>{t.readThesis} →</a>}
-                {it.link && <a href={it.link} rel="noopener">{t.sideRepo} ↗<span class="sr-only">: {it.what}</span></a>}
-              </li>
-            ))}
-          </ul>
-        </article>
         <div class="card-box reveal">
           <h3>{t.eduH}</h3>
           <ul class="edu-mini">
-            {t.education.map((e) => <li><span class="mono">{e.when}</span> <b>{e.what}</b> · {e.where}</li>)}
+            {t.education.map((e) => (
+              <li>
+                <span class="edu-when">{e.when}</span>
+                <b>{e.what}</b>
+                <span>{e.where}{e.status && <> · <strong class="edu-status">{e.status}</strong></>}</span>
+              </li>
+            ))}
           </ul>
           <dl class="langs">{t.langs.map(([l, v]) => <div><dt>{l}</dt><dd>{v}</dd></div>)}</dl>
+          <details class="job-more">
+            <summary>{t.academicH} ({t.academic.length})</summary>
+            <ul class="contrib">
+              {t.academic.map((it) => (
+                <li>
+                  <b>{it.what}</b><span>{it.detail}</span><small class="mono">{it.stack}</small>
+                  {it.key && <a href={paths.case(lang, it.key)}>{t.readThesis} →</a>}
+                  {it.link && <a href={it.link} rel="noopener">{t.sideRepo} ↗<span class="sr-only">: {it.what}</span></a>}
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
+        <div class="card-box stack-box reveal">
+          <h3>{t.stackH}</h3>
+          <p class="stack-note">{t.stackNote}</p>
         </div>
       </div>
-    </div>
-    <div class="wrap">
-      <h3 class="stack-h reveal">{t.stackH}</h3>
-      <div class="stack">
-        {t.tiles.map((tile) => (
-          <div class="tile reveal">
-            <h4>{tile.h}</h4>
-            <ul>{tile.items.map(([name, where]) => <li>{name} <span>{where}</span></li>)}</ul>
-          </div>
-        ))}
-      </div>
-      <p class="stack-note reveal">{t.stackNote}</p>
     </div>
   </section>
 
@@ -266,21 +213,18 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
       <div class="reveal">
         <p class="big">{t.aboutBig}</p>
         {t.aboutP.map((p) => <p>{p}</p>)}
-        <div class="tools">
-          <h3><Icon name="Network" size={20} /> {t.toolsH}</h3>
-          <p>{t.toolsP}</p>
-        </div>
       </div>
-      <dl class="tl reveal" aria-label={t.aboutFactsLabel}>
-        {t.aboutFacts.map(([k, v]) => <div><dt class="mono">{k}</dt><dd>{v}</dd></div>)}
-      </dl>
+      <div class="tools reveal">
+        <h3><Icon name="Network" size={20} /> {t.toolsH}</h3>
+        <p>{t.toolsP}</p>
+      </div>
     </div>
   </section>
 
   <section class="contact" id="contacto" aria-labelledby="h-contacto">
     <div class="wrap sec-head reveal">
       <div><p class="num mono">{t.contactNum}</p><h2 id="h-contacto">{t.contactH}</h2></div>
-      <p>{t.contactP}</p>
+      <p><strong class="reply">{t.contactReply}</strong> {t.contactP}</p>
     </div>
     <div class="wrap reveal">
       <a class="mail" href={`mailto:${EMAIL}`}>{EMAIL}</a>

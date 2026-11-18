@@ -27,6 +27,7 @@ home:
   summary: "El sistema que conecta los chats de ventas a empresas de un cliente retail con sus sistemas internos."
   problem: "Cada mensaje y conversación tenía que guardarse y disparar procesos como avisos, cotizaciones y despachos, sin perder nada y sin que un fallo arrastrara a los demás."
   result: "Una plataforma en la nube que procesa cada tipo de evento por separado y se despliega igual en cada ambiente. Fui su desarrollador principal durante año y medio."
+  decision: "Repartir cada tipo de evento a su propia cola y su propia función, para que un fallo no arrastre a los demás."
   tags: ["Integraciones", "Nube", "Backend"]
   sticker: {"value": "60 %", "label": "de los cambios del proyecto son míos"}
 ---

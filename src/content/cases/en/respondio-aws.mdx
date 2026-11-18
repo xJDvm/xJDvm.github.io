@@ -27,6 +27,7 @@ home:
   summary: "The system that connects a retail client’s business-sales chats with its internal systems."
   problem: "Every message and conversation had to be stored and trigger processes like alerts, quotes and deliveries, without losing anything and without one failure dragging down the rest."
   result: "A cloud platform that handles each kind of event separately and deploys the same way in every environment. I was its lead developer for a year and a half."
+  decision: "Route each event type to its own queue and its own function, so one failure doesn’t drag down the rest."
   tags: ["Integrations", "Cloud", "Backend"]
   sticker: {"value": "60%", "label": "of the project’s changes are mine"}
 ---

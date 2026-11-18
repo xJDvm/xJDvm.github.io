@@ -52,6 +52,23 @@ const gallery = galleries[d.key];
     </header>
 
     <div class="wrap prose-wrap">
+      {/* El resumen (problema, decisión, evidencia) va primero en el DOM: en móvil se lee antes que el cuerpo; en escritorio la rejilla lo coloca a la derecha. */}
+      <aside class="aside" aria-label={t.facts.stack}>
+        <dl class="facts">
+          <div><dt>{t.facts.problem}</dt><dd>{d.problem}</dd></div>
+          <div class="key"><dt>{t.facts.decision}</dt><dd>{d.decision}</dd></div>
+          {d.evidence && <div class="ev"><dt>{t.evidenceLabel}</dt><dd>{d.evidence}</dd></div>}
+          <div><dt>{t.facts.period}</dt><dd>{d.period}</dd></div>
+        </dl>
+        <Metrics items={d.metrics} label={t.facts.metrics} />
+        <ul class="chips" aria-label={t.facts.stack}>{d.stack.map((s) => <li>{s}</li>)}</ul>
+        {d.footprint && d.footprint.length > 0 && (
+          <details class="foot">
+            <summary class="mono">{t.facts.footprint}</summary>
+            <Metrics items={d.footprint} label={t.facts.footprint} note={t.facts.footprintNote} variant="footprint" />
+          </details>
+        )}
+      </aside>
       <div class="prose-col">
         {(arch || gallery) && (
           <div class="case-visuals">
@@ -71,21 +88,6 @@ const gallery = galleries[d.key];
           <Content />
         </div>
       </div>
-      <aside class="aside" aria-label={t.facts.stack}>
-        <dl class="facts">
-          <div class="key"><dt>{t.facts.decision}</dt><dd>{d.decision}</dd></div>
-          <div><dt>{t.facts.problem}</dt><dd>{d.problem}</dd></div>
-          <div><dt>{t.facts.period}</dt><dd>{d.period}</dd></div>
-        </dl>
-        <Metrics items={d.metrics} label={t.facts.metrics} />
-        <ul class="chips" aria-label={t.facts.stack}>{d.stack.map((s) => <li>{s}</li>)}</ul>
-        {d.footprint && d.footprint.length > 0 && (
-          <details class="foot">
-            <summary class="mono">{t.facts.footprint}</summary>
-            <Metrics items={d.footprint} label={t.facts.footprint} note={t.facts.footprintNote} variant="footprint" />
-          </details>
-        )}
-      </aside>
     </div>
 
     <div class="wrap next">

@@ -29,11 +29,15 @@ const cases = defineCollection({
     footprint: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     /** Cifras reales de impacto de negocio. Opcional: si está vacío, la sección de métricas no se renderiza. */
     metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    /** «Cómo sé que funciona»: solo evidencia verificable (pruebas, mediciones) de research/. Opcional: sin evidencia, no se muestra. */
+    evidence: z.string().optional(),
     /** Versión en lenguaje llano para la home (sin nombres de servicios). El detalle técnico queda en la página del caso. */
     home: z.object({
       summary: z.string(),
       problem: z.string(),
       result: z.string(),
+      /** Decisión en una frase, para la tarjeta compacta de los casos destacados. */
+      decision: z.string().optional(),
       tags: z.array(z.string()).max(3),
       sticker: z.object({ value: z.string(), label: z.string() }),
     }).optional(),
