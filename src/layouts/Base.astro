@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { dict, paths, type Lang } from '../i18n';
+import { dict, paths, EMAIL, GITHUB, LINKEDIN, type Lang } from '../i18n';
 
 interface Props {
   lang: Lang;
@@ -17,6 +17,19 @@ const site = Astro.site ?? new URL('https://xjdvm.github.io');
 const canonical = new URL(Astro.url.pathname, site).href;
 const og = new URL('/og.png', site).href;
 const home = paths.home(lang);
+/* Datos estructurados (schema.org Person) para buscadores. Solo datos ya publicados en el sitio. */
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Juan Diego Valdés M.',
+  jobTitle: lang === 'es' ? 'Ingeniero de software full-stack' : 'Full-stack software engineer',
+  url: new URL(home, site).href,
+  email: `mailto:${EMAIL}`,
+  address: { '@type': 'PostalAddress', addressLocality: 'Valencia', addressCountry: 'VE' },
+  knowsLanguage: ['es', 'en'],
+  knowsAbout: ['AWS Lambda', 'Amazon Bedrock AgentCore', 'Model Context Protocol', 'TypeScript', 'Python', 'PostgreSQL'],
+  sameAs: [GITHUB, LINKEDIN],
+};
 ---
 <!doctype html>
 <html lang={t.htmlLang}>
@@ -46,6 +59,7 @@ const home = paths.home(lang);
     <meta property="og:locale" content={t.locale} />
     <meta property="og:locale:alternate" content={lang === 'es' ? dict.en.locale : dict.es.locale} />
     <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(person)} />
     <script is:inline>
       /* Tema sin parpadeo: aplica la preferencia guardada antes de pintar. */
       (function () {
@@ -58,7 +72,7 @@ const home = paths.home(lang);
       })();
     </script>
   </head>
-  <body>
+  <body data-lb-close={t.lbClose} data-lb-prev={t.lbPrev} data-lb-next={t.lbNext}>
     <a class="skip" href="#main">{t.skip}</a>
     <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -99,7 +113,6 @@ const home = paths.home(lang);
       </div>
     </footer>
 
-    <div class="cur" id="cur" aria-hidden="true"></div>
     <script>
       import '../scripts/site';
     </script>

@@ -1,7 +1,6 @@
-/* Comportamiento compartido: barra de progreso, revelado, nav activa, proceso, copiar email, cursor. */
+/* Comportamiento compartido: barra de progreso, revelado, nav activa, tema, copiar email y carga diferida de efectos. */
 const $ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => r.querySelector<T>(s as any) as T | null;
 const $$ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => Array.from(r.querySelectorAll<T>(s as any)) as T[];
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* Barra de progreso de lectura */
 const bar = $('#progress');
@@ -34,29 +33,6 @@ if ('IntersectionObserver' in window) {
     { rootMargin: '-45% 0px -50% 0px' },
   );
   $$('main section[id]').forEach((s) => so.observe(s));
-
-  const pn = $('#proc-n'), pl = $('#proc-l'), box = $('.proc-stick');
-  const steps = $$('.step');
-  if (pn && pl && box && steps.length) {
-    const po = new IntersectionObserver(
-      (es) => es.forEach((e) => {
-        if (!e.isIntersecting) return;
-        steps.forEach((s) => s.classList.toggle('active', s === e.target));
-        const d = (e.target as HTMLElement).dataset;
-        pn.textContent = d.n ?? '';
-        pl.textContent = d.l ?? '';
-        box.style.background = d.c ?? '';
-        box.style.color = d.f ?? '';
-        if (!reduced) {
-          pn.style.transform = 'scale(.8) rotate(-6deg)';
-          requestAnimationFrame(() => requestAnimationFrame(() => { pn.style.transform = ''; }));
-        }
-      }),
-      { rootMargin: '-45% 0px -45% 0px' },
-    );
-    steps.forEach((s) => po.observe(s));
-    steps[0].classList.add('active');
-  }
 } else {
   $$('.reveal').forEach((e) => e.classList.add('in'));
 }
@@ -98,25 +74,18 @@ $$<HTMLButtonElement>('[data-copy]').forEach((btn) => {
   });
 });
 
-/* Cursor acompañante: solo puntero fino y sin reduced motion */
-const cur = $('#cur');
-if (cur && !reduced && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-  let x = 0, y = 0, tx = 0, ty = 0, live = false;
-  const loop = () => {
-    if (!live) return;
-    x += (tx - x) * 0.2;
-    y += (ty - y) * 0.2;
-    cur.style.transform = `translate(${x}px,${y}px)`;
-    requestAnimationFrame(loop);
+/* Efectos interactivos (escena 3D, tilt, diagramas, visor de capturas): el módulo se descarga solo cuando
+   el primer elemento [data-fx] se acerca a la pantalla, sin bloquear el render inicial. */
+const fxTargets = $$('[data-fx]');
+if (fxTargets.length) {
+  let loaded = false;
+  const load = () => {
+    if (loaded) return;
+    loaded = true;
+    import('./fx').then((m) => m.init()).catch(() => { /* sin efectos: el contenido estático sigue funcionando */ });
   };
-  addEventListener('pointermove', (e) => {
-    tx = e.clientX; ty = e.clientY;
-    if (!live) { live = true; x = tx; y = ty; cur.classList.add('show'); loop(); }
-    const t = (e.target as Element).closest?.('[data-cursor]') as HTMLElement | null;
-    cur.classList.toggle('big', !!t);
-    cur.textContent = t ? t.dataset.cursor ?? '' : '';
-  }, { passive: true });
-  addEventListener('pointerdown', () => cur.classList.add('dn'));
-  addEventListener('pointerup', () => cur.classList.remove('dn'));
-  document.addEventListener('mouseleave', () => { cur.classList.remove('show'); live = false; });
+  if ('IntersectionObserver' in window) {
+    const fo = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { fo.disconnect(); load(); } }, { rootMargin: '200px 0px' });
+    fxTargets.forEach((el) => fo.observe(el));
+  } else load();
 }

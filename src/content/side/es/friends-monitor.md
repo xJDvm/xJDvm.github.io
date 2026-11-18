@@ -1,6 +1,6 @@
 ---
 lang: es
-order: 1
+order: 3
 title: "Friends Monitor"
 kind: "App web en tiempo real"
 role: "Arquitecto y desarrollador"

@@ -62,7 +62,7 @@ export const decisions: Record<Lang, Decision[]> = {
       tradeoff: 'Dos colas pequeñas y una Lambda más, y la idempotencia depende del identificador del mensaje de origen.',
     },
     {
-      id: 'faq-harness', case: 'contact-center-ai', tags: ['Costo', 'Latencia', 'Operación'], where: 'Agentes de IA · contact center retail',
+      id: 'faq-harness', case: 'contact-center-ai', tags: ['Costo', 'Latencia', 'Operación'], where: 'Asistentes de IA para atención al cliente',
       h: 'No llamar al modelo si la respuesta ya está escrita',
       problem: 'Muchas consultas (horarios, formas de pago, ubicaciones) tienen un texto aprobado. Resolverlas con el LLM gasta tokens y latencia sin aportar nada.',
       options: 'Un agente recepcionista con LLM · un clasificador LLM intermedio · una Lambda aparte para las FAQ · un harness en la Lambda de entrada.',
@@ -71,7 +71,7 @@ export const decisions: Record<Lang, Decision[]> = {
       tradeoff: 'Una coincidencia demasiado agresiva respondería con texto fijo algo que merecía diálogo. Por eso los patrones son conservadores y las preguntas de fletes, cotizaciones o garantías nunca entran a la tabla.',
     },
     {
-      id: 'mcp-paging', case: 'mcp-cedar-gateway', tags: ['Fiabilidad', 'Contexto'], where: 'Agente MCP · herramienta interna',
+      id: 'mcp-paging', case: 'mcp-cedar-gateway', tags: ['Fiabilidad', 'Contexto'], where: 'Asistente para registrar horas',
       h: 'Proteger el contexto del modelo, no solo la API',
       problem: 'Los catálogos llegaban enteros, con unos 198.000 caracteres, y el agente daba conteos distintos e incorrectos. La API ignoraba los parámetros de paginación.',
       decision: 'Paginar en memoria dentro de la Lambda adaptadora. Ante una respuesta vacía del modelo, un único reintento, para no entrar en bucles.',
@@ -137,7 +137,7 @@ export const decisions: Record<Lang, Decision[]> = {
       tradeoff: 'Two small queues and one more Lambda, and idempotency depends on the source message id.',
     },
     {
-      id: 'faq-harness', case: 'contact-center-ai', tags: ['Cost', 'Latency', 'Operations'], where: 'AI agents · retail contact center',
+      id: 'faq-harness', case: 'contact-center-ai', tags: ['Cost', 'Latency', 'Operations'], where: 'AI assistants for customer service',
       h: 'Don’t call the model when the answer is already written',
       problem: 'Many questions (opening hours, payment methods, locations) have an approved answer. Solving them with the LLM spends tokens and latency for no gain.',
       options: 'A receptionist agent with an LLM · an intermediate LLM classifier · a separate Lambda for FAQs · a harness in the ingress Lambda.',
@@ -146,7 +146,7 @@ export const decisions: Record<Lang, Decision[]> = {
       tradeoff: 'An overly aggressive match would give a canned answer to something that deserved a conversation. So the patterns are conservative, and shipping, quotes and warranty questions never go into the table.',
     },
     {
-      id: 'mcp-paging', case: 'mcp-cedar-gateway', tags: ['Reliability', 'Context'], where: 'MCP agent · internal tool',
+      id: 'mcp-paging', case: 'mcp-cedar-gateway', tags: ['Reliability', 'Context'], where: 'An assistant for logging hours',
       h: 'Protect the model’s context, not just the API',
       problem: 'Catalogs came back whole, at about 198,000 characters, and the agent gave different, wrong counts. The API ignored the pagination parameters.',
       decision: 'Paginate in memory inside the adapter Lambda. On an empty model response, retry exactly once, to avoid loops.',

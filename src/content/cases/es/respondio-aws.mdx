@@ -2,7 +2,8 @@
 key: respondio-aws
 lang: es
 order: 2
-title: Arquitectura de mensajería en AWS
+title: "Integración de mensajería para ventas"
+subtitle: "API Gateway · SNS · SQS · Lambda · Aurora PostgreSQL"
 short: Mensajería en AWS
 label: 02 — Retail · Integraciones
 period: dic 2024 — jul 2026
@@ -23,7 +24,6 @@ footprint:
   - { value: '1', label: 'API Gateway REST con API key' }
 color: bg
 home:
-  title: "Integración de mensajería para ventas"
   summary: "El sistema que conecta los chats de ventas a empresas de un cliente retail con sus sistemas internos."
   problem: "Cada mensaje y conversación tenía que guardarse y disparar procesos como avisos, cotizaciones y despachos, sin perder nada y sin que un fallo arrastrara a los demás."
   result: "Una plataforma en la nube que procesa cada tipo de evento por separado y se despliega igual en cada ambiente. Fui su desarrollador principal durante año y medio."

@@ -1,13 +1,21 @@
 ---
-/* Captura real en un marco de navegador. Astro genera AVIF y WebP en varios anchos; carga diferida. */
-import { Picture } from 'astro:assets';
+/* Captura real en un marco de navegador. Astro genera AVIF y WebP en varios anchos con carga diferida.
+   La imagen es un enlace a la versión grande: sin JS abre la imagen; con JS abre el visor accesible (<dialog>). */
+import { Picture, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+import { dict, type Lang } from '../i18n';
 
-interface Props { src: ImageMetadata; alt: string; url: string; caption?: string; sizes?: string; eager?: boolean; }
-const { src, alt, url, caption, sizes = '(max-width: 900px) 92vw, 560px', eager = false } = Astro.props;
+interface Props { src: ImageMetadata; alt: string; url: string; caption?: string; sizes?: string; eager?: boolean; group?: string; lang: Lang; }
+const { src, alt, url, caption, sizes = '(max-width: 900px) 92vw, 560px', eager = false, group = '', lang } = Astro.props;
+const full = await getImage({ src, format: 'webp', width: Math.min(src.width, 2000), quality: 82 });
 ---
-<figure class="browser">
+<figure class="browser" data-tilt>
   <div class="browser-bar" aria-hidden="true"><span class="lights"><i></i><i></i><i></i></span><span class="browser-url mono">{url}</span></div>
-  <Picture src={src} alt={alt} formats={['avif', 'webp']} widths={[480, 800, 1200, 1600]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+  <a class="zoom" href={full.src} data-lb={group} data-cap={caption ?? ''} data-fx>
+    <Picture src={src} alt={alt} formats={['avif', 'webp']} fallbackFormat="webp" widths={[480, 800, 1200, 1600]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    <span class="zoom-hint" aria-hidden="true"><Icon name="Maximize2" size={16} /></span>
+    <span class="sr-only">{dict[lang].lbOpen}</span>
+  </a>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>

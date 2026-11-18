@@ -1,21 +1,36 @@
 ---
-/* Diagrama de flujo accesible: una lista ordenada de pasos con icono, unidos por conectores dibujados en CSS.
-   Los colores salen de variables de tema, así que funciona en claro, oscuro y bloques invertidos. */
-import Icon from './Icon.astro';
+/* Diagrama de arquitectura accesible: una lista ordenada de pasos con iconos de nube (AWS Architecture Icons,
+   Simple Icons o Lucide), unidos por conectores en CSS. Con JS se vuelve interactivo: al pasar el puntero por un
+   paso se resalta el recorrido hasta él, y el botón «Recorrer» lo anima paso a paso (anunciado por aria-live).
+   Sin JS o con reduced-motion queda como diagrama estático. Colores por variables de tema: claro, oscuro e invertido. */
+import { iconSvg, iconKind } from '../lib/cloud-icons';
+import { dict, type Lang } from '../i18n';
 import type { FlowStep } from '../lib/flows';
 
-interface Props { steps: FlowStep[]; caption: string; label: string; class?: string; }
-const { steps, caption, label, class: cls = '' } = Astro.props;
+interface Props { steps: FlowStep[]; caption: string; label: string; lang: Lang; class?: string; }
+const { steps, caption, label, lang, class: cls = '' } = Astro.props;
+const t = dict[lang];
 const half = Math.ceil(steps.length / 2);
+const uid = `flow-${Math.random().toString(36).slice(2, 8)}`;
+const desc = steps.map((s, i) => `${i + 1}. ${s.label}${s.sub ? ` (${s.sub})` : ''}`).join('; ');
 ---
-<figure class={`flow ${cls}`}>
-  <figcaption class="flow-cap mono">{caption}</figcaption>
-  <ol class="flow-list" aria-label={label} style={`--rows:${half}`}>
+<figure class={`flow ${cls}`} data-flow data-fx aria-labelledby={`${uid}-cap`}>
+  <figcaption class="flow-head">
+    <span class="flow-cap mono" id={`${uid}-cap`}>{caption}</span>
+    <button class="flow-play mono" type="button" data-flow-play hidden
+      data-step={t.flowStep} data-of={t.flowOf}>
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><path d="M7 4.5v15l12-7.5z" fill="currentColor" /></svg>
+      {t.flowPlay}
+    </button>
+  </figcaption>
+  <p class="sr-only" id={`${uid}-desc`}>{label}: {desc}.</p>
+  <ol class="flow-list" aria-label={label} aria-describedby={`${uid}-desc`} style={`--rows:${half}`}>
     {steps.map((s, i) => (
-      <li class={`fn${s.tone ? ` t-${s.tone}` : ''}${i === half - 1 ? ' fn-colend' : ''}`}>
-        <span class="fn-ico"><Icon name={s.icon} size={20} /></span>
+      <li class={`fn${s.tone ? ` t-${s.tone}` : ''}${i === half - 1 ? ' fn-colend' : ''}`} data-i={i} style={`--i:${i}`}>
+        <span class={`fn-ico k-${iconKind(s.icon)}`} set:html={iconSvg(s.icon, iconKind(s.icon) === 'lucide' ? 20 : 26)} />
         <span class="fn-txt"><b>{s.label}</b>{s.sub && <small>{s.sub}</small>}</span>
       </li>
     ))}
   </ol>
+  <p class="sr-only" aria-live="polite" data-flow-live></p>
 </figure>

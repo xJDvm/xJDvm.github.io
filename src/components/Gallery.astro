@@ -1,0 +1,28 @@
+---
+/* Galería de capturas reales: la primera en grande dentro del marco de navegador y el resto como miniaturas.
+   Todas abren el mismo visor (flechas, Esc y foco devuelto al cerrar). */
+import { Picture, getImage } from 'astro:assets';
+import Screenshot from './Screenshot.astro';
+import { dict, type Lang } from '../i18n';
+import type { Shot } from '../lib/shots';
+
+interface Props { shots: Shot[]; lang: Lang; group: string; sizes?: string; }
+const { shots, lang, group, sizes } = Astro.props;
+const [main, ...rest] = shots;
+const t = dict[lang];
+const thumbs = await Promise.all(rest.map(async (s) => ({ s, full: await getImage({ src: s.src, format: 'webp', width: Math.min(s.src.width, 2000), quality: 82 }) })));
+---
+<div class="gallery">
+  <Screenshot src={main.src} alt={main.alt[lang]} url={main.url} caption={main.caption[lang]} group={group} lang={lang} sizes={sizes} />
+  {thumbs.length > 0 && (
+    <ul class="thumbs" aria-label={t.galleryLabel}>
+      {thumbs.map(({ s, full }) => (
+        <li>
+          <a class="zoom thumb" href={full.src} data-lb={group} data-cap={s.caption[lang]} data-fx>
+            <Picture src={s.src} alt={s.alt[lang]} formats={['avif', 'webp']} fallbackFormat="webp" widths={[240, 480]} sizes="(max-width: 640px) 45vw, 200px" loading="lazy" decoding="async" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>

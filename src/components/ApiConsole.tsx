@@ -192,7 +192,7 @@ export default function ApiConsole({ copy, endpoints, email }: Props) {
         </div>
         <div class="out">
           <div class="pane">
-            <h3><span>{copy.jsonTitle}</span><span>{ms}</span></h3>
+            <h4><span>{copy.jsonTitle}</span><span>{ms}</span></h4>
             <pre tabIndex={0} aria-label={copy.jsonAria}>
               {shown ? (
                 <Highlight value={shown.body} />
@@ -202,8 +202,8 @@ export default function ApiConsole({ copy, endpoints, email }: Props) {
             </pre>
           </div>
           <div class="pane">
-            <h3><span>{copy.uiTitle}</span><span>{status}</span></h3>
-            <div class="ui" aria-live="polite">
+            <h4><span>{copy.uiTitle}</span><span>{status}</span></h4>
+            <div class="ui" tabIndex={0} role="region" aria-label={copy.uiTitle} aria-live="polite">
               {shown ? <Render ep={shown} copy={copy} email={email} /> : <p class="demo-hint">{copy.loading}</p>}
             </div>
           </div>

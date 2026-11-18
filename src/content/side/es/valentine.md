@@ -1,6 +1,6 @@
 ---
 lang: es
-order: 4
+order: 6
 title: "Página interactiva"
 kind: "Micrositio"
 role: "Autor"

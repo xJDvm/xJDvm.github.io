@@ -5,9 +5,9 @@ import CaseArt from './CaseArt.astro';
 import Metrics from './Metrics.astro';
 import DecisionCard from './DecisionCard.astro';
 import Flow from './Flow.astro';
-import Screenshot from './Screenshot.astro';
+import Gallery from './Gallery.astro';
 import { flows } from '../lib/flows';
-import { shots } from '../lib/shots';
+import { galleries } from '../lib/shots';
 import { decisions } from '../i18n/decisions';
 import { dict, paths, EMAIL, type Lang } from '../i18n';
 import { getAllCases, blockClass, type Case } from '../lib/cases';
@@ -27,7 +27,7 @@ const alternates = { es: paths.case('es', d.key), en: paths.case('en', d.key) };
 const title = `${d.title} — Juan Diego Valdés M.`;
 const caseDecisions = decisions[lang].filter((x) => x.case === d.key);
 const arch = flows[lang][d.key]?.arch;
-const shot = shots[d.key]?.detail;
+const gallery = galleries[d.key];
 ---
 <Base lang={lang} title={title} description={d.summary} alternates={alternates} ogType="article">
   <article aria-labelledby="case-title">
@@ -37,7 +37,12 @@ const shot = shots[d.key]?.detail;
           <p class="crumbs mono"><a href={back}>{t.caseBack}</a></p>
           <p class="idx mono">{d.label} · {d.period}</p>
           <h1 id="case-title">{d.title}</h1>
+          {d.subtitle && <p class="case-sub mono">{d.subtitle}</p>}
           <p class="sum">{d.summary}</p>
+          <dl class="tldr" aria-label="TL;DR">
+            <div><dt class="mono">{t.facts.role}</dt><dd>{d.role}</dd></div>
+            <div><dt class="mono">{t.facts.result}</dt><dd>{d.result}</dd></div>
+          </dl>
         </div>
         <div class="vis">
           <div class="shot"><CaseArt k={d.key} lang={lang} /></div>
@@ -48,10 +53,10 @@ const shot = shots[d.key]?.detail;
 
     <div class="wrap prose-wrap">
       <div class="prose-col">
-        {(arch || shot) && (
+        {(arch || gallery) && (
           <div class="case-visuals">
-            {arch && <Flow steps={arch} caption={t.flowArch} label={`${t.flowArch}: ${d.title}`} class="flow-arch" />}
-            {shot && <Screenshot src={shot.src} alt={shot.alt[lang]} url={shot.url} caption={shot.caption[lang]} sizes="(max-width: 900px) 92vw, 720px" />}
+            {arch && <Flow steps={arch} caption={t.flowArch} label={`${t.flowArch}: ${d.title}`} lang={lang} class="flow-arch" />}
+            {gallery && <Gallery shots={gallery} lang={lang} group={`case-${d.key}`} sizes="(max-width: 900px) 92vw, 720px" />}
           </div>
         )}
         {caseDecisions.length > 0 && (
@@ -70,20 +75,23 @@ const shot = shots[d.key]?.detail;
         <dl class="facts">
           <div class="key"><dt>{t.facts.decision}</dt><dd>{d.decision}</dd></div>
           <div><dt>{t.facts.problem}</dt><dd>{d.problem}</dd></div>
-          <div><dt>{t.facts.role}</dt><dd>{d.role}</dd></div>
-          <div class="res"><dt>{t.facts.result}</dt><dd>{d.result}</dd></div>
           <div><dt>{t.facts.period}</dt><dd>{d.period}</dd></div>
         </dl>
         <Metrics items={d.metrics} label={t.facts.metrics} />
         <ul class="chips" aria-label={t.facts.stack}>{d.stack.map((s) => <li>{s}</li>)}</ul>
-        <Metrics items={d.footprint} label={t.facts.footprint} note={t.facts.footprintNote} variant="footprint" />
+        {d.footprint && d.footprint.length > 0 && (
+          <details class="foot">
+            <summary class="mono">{t.facts.footprint}</summary>
+            <Metrics items={d.footprint} label={t.facts.footprint} note={t.facts.footprintNote} variant="footprint" />
+          </details>
+        )}
       </aside>
     </div>
 
     <div class="wrap next">
-      {hasNav && <a class="btn alt" href={paths.case(lang, prev.data.key)}><span aria-hidden="true">←</span> {t.casePrev}: {prev.data.short}</a>}
+      {hasNav && <a class="btn alt" href={paths.case(lang, prev.data.key)}><span aria-hidden="true">←</span> {t.casePrev}: {prev.data.title}</a>}
       <a class="btn hot" href={`mailto:${EMAIL}?subject=${encodeURIComponent(d.title)}`}>{t.caseCtaBtn}</a>
-      {hasNav && <a class="btn" href={paths.case(lang, next.data.key)}>{t.caseNext}: {next.data.short} <span class="arr" aria-hidden="true">→</span></a>}
+      {hasNav && <a class="btn" href={paths.case(lang, next.data.key)}>{t.caseNext}: {next.data.title} <span class="arr" aria-hidden="true">→</span></a>}
     </div>
   </article>
 </Base>

@@ -1,6 +1,6 @@
 ---
 lang: en
-order: 4
+order: 6
 title: "Interactive page"
 kind: "Microsite"
 role: "Author"

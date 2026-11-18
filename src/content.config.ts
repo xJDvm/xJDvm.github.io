@@ -10,6 +10,8 @@ const cases = defineCollection({
     kind: z.enum(['case', 'academic']).default('case'),
     order: z.number(),
     title: z.string(),
+    /** Antetítulo técnico (servicios principales), el mismo en la home y en el caso. */
+    subtitle: z.string().optional(),
     short: z.string(),
     label: z.string(),
     period: z.string(),
@@ -29,7 +31,6 @@ const cases = defineCollection({
     metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     /** Versión en lenguaje llano para la home (sin nombres de servicios). El detalle técnico queda en la página del caso. */
     home: z.object({
-      title: z.string(),
       summary: z.string(),
       problem: z.string(),
       result: z.string(),
@@ -50,6 +51,8 @@ const side = defineCollection({
     year: z.string(),
     stack: z.array(z.string()),
     link: z.string().url().optional(),
+    /** Galería de capturas reales (clave en src/lib/shots.ts). */
+    gallery: z.string().optional(),
     /** Resumen llano para la tarjeta; el cuerpo y el stack quedan en «Detalle técnico». */
     summary: z.string(),
     tags: z.array(z.string()).max(3),

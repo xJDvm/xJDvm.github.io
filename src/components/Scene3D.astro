@@ -1,0 +1,36 @@
+---
+/* Escena 3D ligera (solo CSS 3D, sin WebGL ni dependencias): cuatro capas de arquitectura apiladas en isométrico.
+   Sin JS se ve estática; con JS (cargado al entrar en pantalla) gira con el puntero y las capas se separan al pasar.
+   Con prefers-reduced-motion no hay animación. Es una imagen para lectores de pantalla (role="img" + aria-label). */
+import { iconSvg, CLOUD_ICONS, type CloudIconName } from '../lib/cloud-icons';
+import { dict, type Lang } from '../i18n';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = dict[lang];
+const layers: CloudIconName[][] = [
+  ['apigw', 'whatsapp', 'googlechat'],
+  ['sns', 'sqs', 'eventbridge'],
+  ['lambda', 'agentcore', 'workers'],
+  ['aurora', 'dynamodb', 'postgresql'],
+];
+---
+<div class="scene" data-scene data-fx role="img" aria-label={t.scene3d}>
+  <div class="rig">
+    {layers.map((icons, i) => (
+      <div class={`layer l${i}`} style={`--z:${3 - i}`}>
+        <span class="layer-name mono">{String(i + 1).padStart(2, '0')} · {t.sceneLayers[i]}</span>
+        <div class="layer-icons">
+          {icons.map((n) => (
+            <span class="s-tile">
+              <span class={`s-ico k-${CLOUD_ICONS[n].kind}`} set:html={iconSvg(n, 30)} />
+              <span class="s-name">{CLOUD_ICONS[n].name.replace(/^(Amazon|AWS) /, '')}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    ))}
+    <span class="beam" aria-hidden="true"></span>
+  </div>
+  <p class="scene-hint mono" aria-hidden="true">{t.sceneHint}</p>
+</div>
