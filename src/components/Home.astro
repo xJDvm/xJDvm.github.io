@@ -40,11 +40,19 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
         <ul class="proofs" aria-label={t.proofsLabel}>
           {t.proofs.map((p) => (
             <li>
-              <a href={proofHref(p.to)}>
-                <span class="proof-k">{p.k}</span>
-                <b>{p.v}</b>
-                <span class="proof-d">{p.d}</span>
-              </a>
+              {p.to ? (
+                <a class="proof" href={proofHref(p.to)}>
+                  <span class="proof-k">{p.k}</span>
+                  <b>{p.v}</b>
+                  <span class="proof-d">{p.d}</span>
+                </a>
+              ) : (
+                <div class="proof">
+                  <span class="proof-k">{p.k}</span>
+                  <b>{p.v}</b>
+                  <span class="proof-d">{p.d}</span>
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -90,7 +98,7 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
         {others.map((c) => (
           <li>
             <a class="more-card" href={paths.case(lang, c.data.key)}>
-              <span class="more-k">{c.data.label.replace(/^\d+\s—\s/, '')} · {c.data.period}</span>
+              <span class="more-k">{c.data.label} · {c.data.period}</span>
               <b>{c.data.title}</b>
               <span class="more-go">{t.readCase} <span aria-hidden="true">→</span></span>
             </a>
@@ -108,7 +116,7 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
                 <a class="more-go" href={m.data.link} rel="noopener">{t.sideRepo} ↗<span class="sr-only">: {m.data.title}</span></a>
                 {gal && (
                   <details class="more-shots">
-                    <summary>{t.moreShots}</summary>
+                    <summary>{t.moreShots} ({gal.length})</summary>
                     <Gallery shots={gal} lang={lang} group={`side-${key}`} sizes="(max-width: 900px) 92vw, 640px" />
                   </details>
                 )}

@@ -23,6 +23,7 @@ footprint:
   - { value: '176', label: 'test cases in the AWS variant (90 + 86)' }
 color: red
 evidence: "176 test cases in the AWS variant (90 in the contact center and 86 in the internal app)."
+change: "I’d close two open items the architecture left sooner: the IP filter at the edge, lost when choosing HTTP API, and the Aurora backups, which keep for 7 days text already purged by the 30-day retention."
 home:
   summary: "Patients served over Messenger and Instagram with AI, an internal app for the staff and a patient memory for the medical directors."
   problem: "The clinic serves patients over social media and needed to answer fast, without the AI answering what isn’t its place or sending duplicate replies."

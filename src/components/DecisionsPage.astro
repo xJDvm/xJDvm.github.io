@@ -20,8 +20,16 @@ const alternates = { es: paths.decisions('es'), en: paths.decisions('en') };
       </div>
       <p>{t.dec.p}</p>
     </div>
+    <nav class="wrap dec-toc-nav" aria-labelledby="dec-toc-h">
+      <h2 id="dec-toc-h" class="dec-toc-h mono">{t.dec.toc}</h2>
+      <ol class="dec-toc">
+        {decisions[lang].map((d, i) => (
+          <li><a href={`#dec-${d.id}`}><span class="mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span> {d.h}</a></li>
+        ))}
+      </ol>
+    </nav>
     <div class="wrap dec-grid">
-      {decisions[lang].map((d) => <DecisionCard d={d} lang={lang} level="h2" />)}
+      {decisions[lang].map((d) => <DecisionCard d={d} lang={lang} level="h2" fold />)}
     </div>
   </section>
 </Base>

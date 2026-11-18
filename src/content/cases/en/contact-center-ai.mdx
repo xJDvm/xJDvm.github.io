@@ -24,13 +24,14 @@ footprint:
   - { value: '14', label: 'ADRs' }
 color: wine
 evidence: "A shared regression suite (10 cases across 2 suites) for the three agents and 221 unit test cases in the migration. Verified end to end: memory recalls facts across turns, an FAQ is delivered over WhatsApp without invoking the model, and an unauthorized origin gets a 403."
+change: "I’d validate the ingress security against the real webhook before designing it: I assumed a token the provider doesn’t send and, once connected in QA, the rejection dropped 100% of legitimate traffic until we moved to a source-IP policy. I’d also split the agents sooner: the single router forces one package and a template everyone edits; the alternative, one Runtime per agent, is still a proposal."
 home:
   summary: "Three assistants handling sales, reception and support over WhatsApp and web for a retail chain in Latin America."
   problem: "The assistants were spread across two platforms, and any manual change could break customer service."
   result: "Changes are now tested before they are published and move between environments under control. The sales assistant was migrated to a new platform without interrupting service, and frequent questions are answered instantly without spending AI."
   decision: "Treat the assistants as code: every change is tested before it ships, and frequent questions get the approved answer without calling the AI."
   tags: ["AI", "Customer service", "Cloud"]
-  sticker: {"value": "3", "label": "assistants: sales, reception and support"}
+  sticker: {"value": "221", "label": "automated test cases in the sales assistant’s migration"}
 ---
 
 ## Context

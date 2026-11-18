@@ -26,7 +26,8 @@ type Item = { what: string; detail: string; stack: string };
 /** Nombre de un icono de lucide-static (PascalCase). */
 export type IconName = string;
 type Think = { h: string; icon: IconName; case: string; problem: string; choice: string };
-type Proof = { k: string; v: string; d: string; to: string };
+/** `to` es opcional: una prueba sin evidencia enlazable (el premio) se muestra como tarjeta sin enlace. */
+type Proof = { k: string; v: string; d: string; to?: string };
 type Job = { when: string; title: string; org: string; award?: { label: string; what: string; detail: string }; intro: string; items: Item[] };
 type Edu = { when: string; what: string; where: string; status?: string; detail: string };
 
@@ -56,9 +57,9 @@ export const dict = {
     lede: 'Construyo asistentes de IA con las reglas en código, integraciones por eventos y costos medidos, y explico qué se gana y qué se pierde con cada decisión.',
     proofsLabel: 'Tres pruebas',
     proofs: [
-      { k: 'Premio · 2026', v: 'Ganador del Nexus Challenge', d: 'Bot de ventas de punta a punta · Intelix y AWS Kiro', to: 'experiencia' },
-      { k: 'Desarrollador principal', v: '571 de 953 commits', d: 'de una plataforma serverless de mensajería (60\u00a0%)', to: 'respondio-aws' },
-      { k: 'Trayectoria', v: '4 años de experiencia construyendo software', d: 'Incluye freelance, universidad, proyectos propios y otro empleo previo', to: 'experiencia' },
+      { k: 'Premio · 2026', v: 'Ganador del Nexus Challenge', d: 'Bot de ventas de punta a punta · Intelix y AWS Kiro' },
+      { k: 'Medido, no supuesto', v: 'De ~198.000 a 611 caracteres', d: 'lo que recibe el modelo por listado, tras paginar en el adaptador', to: 'mcp-cedar-gateway' },
+      { k: 'Trayectoria', v: '4 años de experiencia construyendo software', d: 'Backend, frontend, nube e IA, en equipo y en solitario', to: 'experiencia' },
     ] as Proof[],
     ctaWork: 'Ver los casos',
     ctaHire: 'Contrátame',
@@ -103,6 +104,8 @@ export const dict = {
       measured: 'Medido',
       readCase: 'Ver en el caso',
       caseH: 'Decisiones de ingeniería',
+      toc: 'Las 8 decisiones',
+      more: 'Ver alternativas, por qué y trade-off',
       caseP: 'Lo más importante de este caso no es el stack, sino estas decisiones y lo que se aceptó a cambio.',
     },
     flowHome: 'Cómo funciona',
@@ -113,12 +116,13 @@ export const dict = {
     moreH: 'Más casos y proyectos',
     moreCase: 'Caso',
     moreShots: 'Ver capturas',
+    whatChange: 'Lo que cambiaría',
     facts: { problem: 'Problema', decision: 'Decisión clave', role: 'Mi rol', result: 'Resultado', stack: 'Stack', period: 'Periodo', metrics: 'Impacto', footprint: 'Huella técnica', footprintNote: 'Conteos hechos sobre los repositorios', achieved: 'Lo que se logró', areas: 'Áreas' },
     readCase: 'Leer el caso completo',
     sideRepo: 'Repositorio',
     expNum: '03 / Experiencia',
     expH: ['Experiencia'],
-    expP: 'Los 4 años incluyen trabajo freelance, proyectos universitarios, proyectos propios y otro empleo o pasantía antes de mi empleo actual, que empezó en mayo de 2024.',
+    expP: 'Mi empleo actual, lo que aporté en equipo y mi formación.',
     contribH: 'Aportes en equipo (mi parte)',
     jobs: [
       {
@@ -133,13 +137,6 @@ export const dict = {
           { what: 'Tasas oficiales del BCV', detail: 'Mantenimiento del servicio que actualiza las tasas USD/EUR: precisión decimal, programación, reintentos y avisos por email.', stack: 'Node.js · cron · scraping · DB2' },
           { what: 'Integraciones con SAP y punto de venta', detail: 'Aportes puntuales en microservicios de otros equipos, como el filtrado de eventos y el borrado de planogramas con validaciones.', stack: 'AWS SAM · Python · SNS' },
         ] as Item[],
-      },
-      {
-        when: 'antes de 2024',
-        title: 'Freelance, proyectos propios y empleo previo',
-        org: 'Antes del empleo actual',
-        intro: 'Proyectos freelance, proyectos propios y otro empleo o pasantía, en paralelo con la universidad.',
-        items: [] as Item[],
       },
     ] as Job[],
     academicH: 'Proyectos universitarios',
@@ -221,9 +218,9 @@ export const dict = {
     lede: 'I build AI assistants with guardrails in code, event-driven integrations and measured costs, and I explain what each decision gains and gives up.',
     proofsLabel: 'Three proof points',
     proofs: [
-      { k: 'Award · 2026', v: 'Winner of the Nexus Challenge', d: 'An end-to-end sales bot · Intelix and AWS Kiro', to: 'experiencia' },
-      { k: 'Lead developer', v: '571 of 953 commits', d: 'on a serverless messaging platform (60%)', to: 'respondio-aws' },
-      { k: 'Track record', v: '4 years of experience building software', d: 'Includes freelance, university and personal projects, and prior work', to: 'experiencia' },
+      { k: 'Award · 2026', v: 'Winner of the Nexus Challenge', d: 'An end-to-end sales bot · Intelix and AWS Kiro' },
+      { k: 'Measured, not assumed', v: 'From ~198,000 to 611 characters', d: 'what the model receives per list, after paging in the adapter', to: 'mcp-cedar-gateway' },
+      { k: 'Track record', v: '4 years of experience building software', d: 'Back end, front end, cloud and AI, on teams and solo', to: 'experiencia' },
     ] as Proof[],
     ctaWork: 'See the case studies',
     ctaHire: 'Hire me',
@@ -268,6 +265,8 @@ export const dict = {
       measured: 'Measured',
       readCase: 'See it in the case',
       caseH: 'Engineering decisions',
+      toc: 'The 8 decisions',
+      more: 'See options, why and trade-off',
       caseP: 'What matters most in this case isn’t the stack but these decisions and what was accepted in exchange.',
     },
     flowHome: 'How it works',
@@ -278,12 +277,13 @@ export const dict = {
     moreH: 'More cases and projects',
     moreCase: 'Case',
     moreShots: 'See screenshots',
+    whatChange: 'What I’d change',
     facts: { problem: 'Problem', decision: 'Key decision', role: 'My role', result: 'Outcome', stack: 'Stack', period: 'Period', metrics: 'Impact', footprint: 'Technical footprint', footprintNote: 'Counted from the repositories', achieved: 'What it achieved', areas: 'Areas' },
     readCase: 'Read the full case',
     sideRepo: 'Repository',
     expNum: '03 / Experience',
     expH: ['Experience'],
-    expP: 'The 4 years include freelance work, university projects, personal projects and other prior work or an internship before my current role, which started in May 2024.',
+    expP: 'My current role, what I contributed on teams, and my education.',
     contribH: 'Team contributions (my part)',
     jobs: [
       {
@@ -298,13 +298,6 @@ export const dict = {
           { what: 'Official BCV exchange rates', detail: 'Maintenance of the service that updates USD/EUR rates: decimal precision, scheduling, retries and email alerts.', stack: 'Node.js · cron · scraping · DB2' },
           { what: 'SAP and point-of-sale integrations', detail: 'One-off contributions to other teams’ microservices, such as event filtering and planogram deletion with validations.', stack: 'AWS SAM · Python · SNS' },
         ] as Item[],
-      },
-      {
-        when: 'before 2024',
-        title: 'Freelance, personal projects and prior work',
-        org: 'Before my current role',
-        intro: 'Freelance projects, personal projects and other prior work or an internship, alongside university.',
-        items: [] as Item[],
       },
     ] as Job[],
     academicH: 'University projects',

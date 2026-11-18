@@ -19,9 +19,9 @@ const d = entry.data;
 const { Content } = await render(entry);
 const siblings = (await getAllCases(lang)).filter((c) => c.data.kind === d.kind);
 const idx = siblings.findIndex((c) => c.data.key === d.key);
-const hasNav = siblings.length > 1;
-const prev = siblings[(idx - 1 + siblings.length) % siblings.length];
-const next = siblings[(idx + 1) % siblings.length];
+/* Sin vuelta: el primer caso no tiene «anterior» ni el último «siguiente». */
+const prev = idx > 0 ? siblings[idx - 1] : undefined;
+const next = idx < siblings.length - 1 ? siblings[idx + 1] : undefined;
 const back = d.kind === 'case' ? `${paths.home(lang)}#trabajo` : `${paths.home(lang)}#experiencia`;
 const alternates = { es: paths.case('es', d.key), en: paths.case('en', d.key) };
 const title = `${d.title} — Juan Diego Valdés M.`;
@@ -58,6 +58,7 @@ const gallery = galleries[d.key];
           <div><dt>{t.facts.problem}</dt><dd>{d.problem}</dd></div>
           <div class="key"><dt>{t.facts.decision}</dt><dd>{d.decision}</dd></div>
           {d.evidence && <div class="ev"><dt>{t.evidenceLabel}</dt><dd>{d.evidence}</dd></div>}
+          {d.change && <div class="chg"><dt>{t.whatChange}</dt><dd>{d.change}</dd></div>}
           <div><dt>{t.facts.period}</dt><dd>{d.period}</dd></div>
         </dl>
         <Metrics items={d.metrics} label={t.facts.metrics} />
@@ -91,9 +92,9 @@ const gallery = galleries[d.key];
     </div>
 
     <div class="wrap next">
-      {hasNav && <a class="btn alt" href={paths.case(lang, prev.data.key)}><span aria-hidden="true">←</span> {t.casePrev}: {prev.data.title}</a>}
+      {prev && <a class="btn alt" href={paths.case(lang, prev.data.key)}><span aria-hidden="true">←</span> {t.casePrev}: {prev.data.title}</a>}
       <a class="btn hot" href={`mailto:${EMAIL}?subject=${encodeURIComponent(d.title)}`}>{t.caseCtaBtn}</a>
-      {hasNav && <a class="btn" href={paths.case(lang, next.data.key)}>{t.caseNext}: {next.data.title} <span class="arr" aria-hidden="true">→</span></a>}
+      {next && <a class="btn" href={paths.case(lang, next.data.key)}>{t.caseNext}: {next.data.title} <span class="arr" aria-hidden="true">→</span></a>}
     </div>
   </article>
 </Base>

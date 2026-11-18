@@ -24,13 +24,14 @@ footprint:
   - { value: '78', label: 'casos de prueba del agente' }
 color: teal
 evidence: "78 casos de prueba del agente. Medido: el listado que recibe el modelo bajó de unos 198.000 a 611 caracteres, y las respuestas vacías pasaron de 2 de cada 6 invocaciones a 1 de 22."
+change: "Pediría paginación real en la API de origen. Hoy la API ignora los parámetros de página, así que la Lambda recibe el catálogo completo y lo recorta en memoria; se acepta porque el límite que importa es el contexto del modelo, pero es trabajo que no debería hacer."
 home:
   summary: "Un asistente en Google Chat que consulta y registra horas de trabajo en la herramienta interna de la consultora, escribiéndole en español."
   problem: "Darle a una IA acceso a una herramienta real abre la puerta a cambios por error o repetidos."
   result: "El asistente solo puede hacer 10 acciones permitidas, ninguna de borrar, pide confirmación antes de cambiar algo y no registra dos veces lo mismo."
   decision: "Ponerlo detrás de una política que lo niega todo por defecto: 10 acciones permitidas, ninguna de borrado, y confirmación antes de cambiar algo."
   tags: ["IA", "Seguridad", "Automatización"]
-  sticker: {"value": "0", "label": "acciones de borrado permitidas"}
+  sticker: {"value": "2/6 → 1/22", "label": "respuestas vacías del asistente, antes y después de medir y corregir"}
 ---
 
 ## Contexto

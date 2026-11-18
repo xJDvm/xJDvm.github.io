@@ -11,7 +11,7 @@ summary: The serverless backend that connects the Respond.io messaging platform 
 problem: The B2B sales channel runs on Respond.io. Every message, contact, assignment and conversation had to be stored, analyzed and trigger processes such as after-hours alerts, keyword detection, deliveries and SAP quotes, without losing events and without coupling one process to another.
 decision: Event fan-out. API Gateway, with an IP allowlist and an API key, publishes to SNS. Event-type filters route traffic to independent SQS queues, each with its own Python 3.12 Lambda, and everything persists in Aurora PostgreSQL. New services live in a consumer stack that references the API and database without owning them.
 role: Lead backend developer. I made 571 of the repository’s 953 commits (60%) and am the main author of the infrastructure template (SAM), though not the only one. I also made 56 of the 123 commits of the contact center backend, which uses the same pattern.
-result: A serverless platform with 25 Lambda functions, 19 SQS queues, 3 SNS topics with 16 filtered subscriptions, 1 API Gateway, an EventBridge bus, one scheduled job and Aurora PostgreSQL 16, deployable per environment with SAM.
+result: Each conversation event triggers its own process (out-of-hours notices, keywords, SAP quotes, deliveries, analysis) in isolation, so if one fails or falls behind the rest keep going. The whole platform deploys per environment with SAM; the resource inventory is under “Technical footprint”.
 tag: AWS
 stack: [Python 3.12, AWS SAM, API Gateway, SNS, SQS, Lambda, Aurora PostgreSQL, EventBridge, S3, SES, Secrets Manager, SSM, CloudWatch, OpenSearch]
 sticker: { value: '19', label: 'SQS queues filtered by event type' }
@@ -23,13 +23,14 @@ footprint:
   - { value: '20', label: 'Aurora tables referenced in code' }
   - { value: '1', label: 'REST API Gateway with API key' }
 color: bg
+change: "I’d version the Aurora schema with migrations and add automated tests from the start: the DDL doesn’t live in the repository and testing is limited to 4 sample events in JSON."
 home:
   summary: "The system that connects a retail client’s business-sales chats with its internal systems."
   problem: "Every message and conversation had to be stored and trigger processes like alerts, quotes and deliveries, without losing anything and without one failure dragging down the rest."
   result: "A cloud platform that handles each kind of event separately and deploys the same way in every environment. I was its lead developer for a year and a half."
   decision: "Route each event type to its own queue and its own function, so one failure doesn’t drag down the rest."
   tags: ["Integrations", "Cloud", "Backend"]
-  sticker: {"value": "60%", "label": "of the project’s changes are mine"}
+  sticker: {"value": "19", "label": "independent queues: if one process fails, the rest keep going"}
 ---
 
 ## The problem

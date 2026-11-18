@@ -22,9 +22,11 @@ function scenes(finePointer: boolean) {
   $$('[data-scene]').forEach((scene) => {
     const rig = scene.querySelector<HTMLElement>('.rig');
     if (!rig) return;
+    /* En pantallas estrechas la escena es 2D (CSS): no se anima. */
+    const flat = matchMedia('(max-width: 767px)');
     let tx = 0, ty = 0, x = 0, y = 0, visible = false, raf = 0, t0 = performance.now(), hover = false;
     const frame = (now: number) => {
-      if (!visible) { raf = 0; return; }
+      if (!visible || flat.matches) { raf = 0; return; }
       if (!hover) {
         const k = (now - t0) / 1000;
         tx = Math.sin(k * 0.5) * 6;
@@ -40,6 +42,7 @@ function scenes(finePointer: boolean) {
       visible = es[0].isIntersecting;
       if (visible && !raf) { t0 = performance.now(); raf = requestAnimationFrame(frame); }
     }).observe(scene);
+    flat.addEventListener('change', () => { if (!flat.matches && visible && !raf) { t0 = performance.now(); raf = requestAnimationFrame(frame); } });
     scene.classList.add('live');
     if (!finePointer) return;
     scene.addEventListener('pointermove', (e) => {

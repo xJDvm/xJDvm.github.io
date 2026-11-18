@@ -11,7 +11,7 @@ summary: El backend serverless que conecta la plataforma de mensajería Respond.
 problem: El canal de ventas a empresas vive en Respond.io. Cada mensaje, contacto, asignación o conversación tenía que guardarse, analizarse y disparar procesos como avisos fuera de horario, detección de palabras clave, despachos y cotizaciones desde SAP, sin perder eventos y sin acoplar unos procesos con otros.
 decision: Fan-out por eventos. API Gateway, con lista de IPs permitidas y API key, publica en SNS. Filtros por tipo de evento reparten el tráfico a colas SQS independientes, cada una con su Lambda en Python 3.12, y todo persiste en Aurora PostgreSQL. Los nuevos servicios se montan en un stack consumidor que referencia la API y la base sin adueñarse de ellas.
 role: Desarrollador principal del backend. Hice 571 de los 953 commits del repositorio (60 %) y soy el principal autor de la plantilla de infraestructura (SAM), aunque no el único. También hice 56 de los 123 commits del backend del contact center, que usa el mismo patrón.
-result: Una plataforma serverless con 25 funciones Lambda, 19 colas SQS, 3 tópicos SNS con 16 suscripciones filtradas, 1 API Gateway, un bus de EventBridge, una tarea programada y Aurora PostgreSQL 16, que se despliega por ambiente con SAM.
+result: Cada evento de la conversación dispara su propio proceso (avisos fuera de horario, palabras clave, cotizaciones desde SAP, despachos, análisis) de forma aislada, así que si uno falla o se atrasa los demás siguen. Toda la plataforma se despliega por ambiente con SAM; el inventario de recursos está en «Huella técnica».
 tag: AWS
 stack: [Python 3.12, AWS SAM, API Gateway, SNS, SQS, Lambda, Aurora PostgreSQL, EventBridge, S3, SES, Secrets Manager, SSM, CloudWatch, OpenSearch]
 sticker: { value: '19', label: 'colas SQS filtradas por tipo de evento' }
@@ -23,13 +23,14 @@ footprint:
   - { value: '20', label: 'tablas de Aurora referenciadas en el código' }
   - { value: '1', label: 'API Gateway REST con API key' }
 color: bg
+change: "Versionaría el esquema de Aurora con migraciones y añadiría pruebas automáticas desde el principio: el DDL no vive en el repositorio y las pruebas se limitan a 4 eventos de ejemplo en JSON."
 home:
   summary: "El sistema que conecta los chats de ventas a empresas de un cliente retail con sus sistemas internos."
   problem: "Cada mensaje y conversación tenía que guardarse y disparar procesos como avisos, cotizaciones y despachos, sin perder nada y sin que un fallo arrastrara a los demás."
   result: "Una plataforma en la nube que procesa cada tipo de evento por separado y se despliega igual en cada ambiente. Fui su desarrollador principal durante año y medio."
   decision: "Repartir cada tipo de evento a su propia cola y su propia función, para que un fallo no arrastre a los demás."
   tags: ["Integraciones", "Nube", "Backend"]
-  sticker: {"value": "60 %", "label": "de los cambios del proyecto son míos"}
+  sticker: {"value": "19", "label": "colas independientes: si un proceso falla, los demás siguen"}
 ---
 
 ## El problema

@@ -31,6 +31,8 @@ const cases = defineCollection({
     metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     /** «Cómo sé que funciona»: solo evidencia verificable (pruebas, mediciones) de research/. Opcional: sin evidencia, no se muestra. */
     evidence: z.string().optional(),
+    /** «Lo que cambiaría»: solo con base documentada en research/ (consecuencias, límites, pendientes, ADR propuestos). Opcional. */
+    change: z.string().optional(),
     /** Versión en lenguaje llano para la home (sin nombres de servicios). El detalle técnico queda en la página del caso. */
     home: z.object({
       summary: z.string(),

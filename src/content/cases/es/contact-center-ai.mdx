@@ -24,13 +24,14 @@ footprint:
   - { value: '14', label: 'ADR' }
 color: wine
 evidence: "Una suite de regresión común (10 casos en 2 suites) para los tres agentes y 221 casos de prueba unitarios en la migración. Comprobado de punta a punta: la memoria recuerda datos entre turnos, una FAQ se entrega por WhatsApp sin invocar el modelo y un origen no autorizado recibe 403."
+change: "Validaría la seguridad de la entrada con el webhook real antes de diseñarla: asumí un token que el proveedor no envía y, al conectarlo en QA, el rechazo descartaba el 100 % del tráfico legítimo hasta pasar a la política por IP de origen. Y separaría antes los agentes: el router único obliga a un solo paquete y a una plantilla que todos tocan; la alternativa, un Runtime por agente, sigue como propuesta."
 home:
   summary: "Tres asistentes que atienden ventas, recepción y soporte por WhatsApp y web para una cadena de retail en Latinoamérica."
   problem: "Los asistentes vivían repartidos en dos plataformas, y cualquier cambio manual podía romper la atención a clientes."
   result: "Ahora los cambios se prueban antes de publicarse y pasan de un ambiente a otro con control. El asistente de ventas se migró a una plataforma nueva sin interrumpir la atención, y las preguntas frecuentes se responden al instante sin gastar IA."
   decision: "Tratar a los asistentes como código: cada cambio se prueba antes de publicarse, y las preguntas frecuentes se responden con el texto aprobado, sin llamar a la IA."
   tags: ["IA", "Atención al cliente", "Nube"]
-  sticker: {"value": "3", "label": "asistentes: ventas, recepción y soporte"}
+  sticker: {"value": "221", "label": "casos de prueba automáticos en la migración del asistente de ventas"}
 ---
 
 ## Contexto

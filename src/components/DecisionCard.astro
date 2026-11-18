@@ -1,37 +1,69 @@
 ---
-/* Tarjeta de una decisión de ingeniería: problema → alternativas → decisión → por qué → trade-off. */
+/* Tarjeta de una decisión de ingeniería: problema → alternativas → decisión → por qué → trade-off.
+   Con `fold` (página de decisiones) solo la decisión queda a la vista; el resto va en un <details> nativo y accesible. */
 import { dict, paths, type Lang } from '../i18n';
 import type { Decision } from '../i18n/decisions';
 
-interface Props { d: Decision; lang: Lang; link?: boolean; level?: 'h3' | 'h2'; }
-const { d, lang, link = true, level = 'h3' } = Astro.props;
+interface Props { d: Decision; lang: Lang; link?: boolean; level?: 'h3' | 'h2'; fold?: boolean; }
+const { d, lang, link = true, level = 'h3', fold = false } = Astro.props;
 const t = dict[lang].dec;
 const H = level;
 ---
-<article class="dec reveal" aria-labelledby={`dec-${d.id}`}>
+<article class={`dec reveal${fold ? ' dec-fold' : ''}`} aria-labelledby={`dec-${d.id}`}>
   <p class="dec-meta mono">
     {d.tags.map((tag) => <span class="dec-tag">{tag}</span>)}
     <span class="dec-where">{d.where}</span>
   </p>
   <H id={`dec-${d.id}`} class="dec-h">{d.h}</H>
-  <dl class="dec-flow">
-    <div><dt>{t.labels.problem}</dt><dd>{d.problem}</dd></div>
-    {d.options && <div><dt>{t.labels.options}</dt><dd>{d.options}</dd></div>}
-    <div class="dec-key"><dt>{t.labels.decision}</dt><dd>{d.decision}</dd></div>
-    <div><dt>{t.labels.why}</dt><dd>{d.why}</dd></div>
-    <div class="dec-trade"><dt>{t.labels.tradeoff}</dt><dd>{d.tradeoff}</dd></div>
-  </dl>
-  {d.figure && (
-    <p class={`dec-fig ${d.figure.kind}`}>
-      <span class="mono">{d.figure.kind === 'estimate' ? t.estimate : t.measured}</span>
-      {d.figure.value}
-    </p>
-  )}
-  {d.code && (
-    <figure class="dec-code">
-      <figcaption class="mono">{d.code.label}</figcaption>
-      <pre tabindex="0"><code>{d.code.src}</code></pre>
-    </figure>
+  {fold ? (
+    <>
+      <dl class="dec-flow">
+        <div class="dec-key"><dt>{t.labels.decision}</dt><dd>{d.decision}</dd></div>
+      </dl>
+      <details class="dec-more">
+        <summary>{t.more}<span class="sr-only">: {d.h}</span></summary>
+        <dl class="dec-flow">
+          <div><dt>{t.labels.problem}</dt><dd>{d.problem}</dd></div>
+          {d.options && <div><dt>{t.labels.options}</dt><dd>{d.options}</dd></div>}
+          <div><dt>{t.labels.why}</dt><dd>{d.why}</dd></div>
+          <div class="dec-trade"><dt>{t.labels.tradeoff}</dt><dd>{d.tradeoff}</dd></div>
+        </dl>
+        {d.figure && (
+          <p class={`dec-fig ${d.figure.kind}`}>
+            <span class="mono">{d.figure.kind === 'estimate' ? t.estimate : t.measured}</span>
+            {d.figure.value}
+          </p>
+        )}
+        {d.code && (
+          <figure class="dec-code">
+            <figcaption class="mono">{d.code.label}</figcaption>
+            <pre tabindex="0"><code>{d.code.src}</code></pre>
+          </figure>
+        )}
+      </details>
+    </>
+  ) : (
+    <>
+      <dl class="dec-flow">
+        <div><dt>{t.labels.problem}</dt><dd>{d.problem}</dd></div>
+        {d.options && <div><dt>{t.labels.options}</dt><dd>{d.options}</dd></div>}
+        <div class="dec-key"><dt>{t.labels.decision}</dt><dd>{d.decision}</dd></div>
+        <div><dt>{t.labels.why}</dt><dd>{d.why}</dd></div>
+        <div class="dec-trade"><dt>{t.labels.tradeoff}</dt><dd>{d.tradeoff}</dd></div>
+      </dl>
+      {d.figure && (
+        <p class={`dec-fig ${d.figure.kind}`}>
+          <span class="mono">{d.figure.kind === 'estimate' ? t.estimate : t.measured}</span>
+          {d.figure.value}
+        </p>
+      )}
+      {d.code && (
+        <figure class="dec-code">
+          <figcaption class="mono">{d.code.label}</figcaption>
+          <pre tabindex="0"><code>{d.code.src}</code></pre>
+        </figure>
+      )}
+    </>
   )}
   {link && d.case && <a class="dec-link mono" href={paths.case(lang, d.case)}>{t.readCase} →</a>}
 </article>

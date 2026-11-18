@@ -193,9 +193,11 @@ code { font-family: var(--mono); font-size: .88em; }
 .hero > .wrap:first-child { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
 .proofs { list-style: none; margin: 26px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 620px) { .proofs { grid-template-columns: 1fr; gap: 10px; } }
-.proofs a { display: grid; gap: 3px; align-content: start; height: 100%; padding: 12px 14px; border: var(--b); border-radius: 12px; background: var(--surface); color: var(--fg); text-decoration: none; box-shadow: 4px 4px 0 var(--shc); transition: transform .12s, box-shadow .12s; }
-.proofs li:nth-child(2) a { box-shadow: 4px 4px 0 var(--shc-2); }
-.proofs a:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--shc); }
+.proof { display: grid; gap: 3px; align-content: start; height: 100%; padding: 12px 14px; border: var(--b); border-radius: 12px; background: var(--surface); color: var(--fg); text-decoration: none; box-shadow: 4px 4px 0 var(--shc); transition: transform .12s, box-shadow .12s; }
+.proofs li:nth-child(2) .proof { box-shadow: 4px 4px 0 var(--shc-2); }
+/* Solo las pruebas con evidencia enlazable parecen clicables; el premio es una tarjeta estática. */
+div.proof { box-shadow: none; background: var(--surface-2); }
+a.proof:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--shc); }
 .proof-k { font-size: .8rem; font-weight: 700; color: var(--teal-text); }
 .proofs b { font: 800 1.08rem/1.18 var(--display); letter-spacing: -.01em; }
 .proof-d { font-size: .86rem; line-height: 1.35; color: var(--sub); }
@@ -385,6 +387,23 @@ section { position: relative; }
 .figs-footprint li { padding: 7px 12px; }
 
 .dec-page { border-top: 0; }
+/* Índice de la página de decisiones y tarjetas plegables. */
+.dec-toc-nav { margin-bottom: clamp(22px, 3vw, 32px); }
+.dec-toc-h { font-size: .8rem; font-weight: 700; text-transform: uppercase; color: var(--teal-text); margin-bottom: 8px; }
+.dec-toc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; border-top: 2px solid var(--rule); }
+@media (max-width: 760px) { .dec-toc { grid-template-columns: 1fr; } }
+.dec-toc li { border-bottom: 2px solid var(--rule); }
+.dec-toc a { display: flex; gap: 10px; align-items: baseline; min-height: 44px; padding: 10px 0; color: var(--fg); font-weight: 600; line-height: 1.3; text-underline-offset: 3px; }
+.dec-toc a .mono { color: var(--teal-text); font-weight: 700; flex: none; }
+.dec-h { scroll-margin-top: 96px; }
+.dec-more { border-top: 2px solid var(--rule); }
+.dec-more > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; color: var(--teal-text); }
+.dec-more > summary::-webkit-details-marker { display: none; }
+.dec-more > summary::before { content: "+"; font: 800 1.1rem/1 var(--mono); width: 1ch; }
+.dec-more[open] > summary::before { content: "−"; }
+.dec-more[open] { display: grid; gap: 12px; }
+.dec-more .dec-flow > div:first-child { border-top: 0; }
+.dec-fold .dec-flow .dec-key { margin-bottom: 0; }
 .think-more { margin-top: 24px; }
 .sec-head h1 { font-size: clamp(2.1rem, 5vw, 4.2rem); font-weight: 800; }
 .case-decs-more { font: 700 .8rem/1.4 var(--mono); color: var(--teal-text); text-underline-offset: 3px; justify-self: start; }
@@ -531,17 +550,21 @@ footer a { color: var(--fg); }
 .feat-more { justify-self: start; }
 .more { margin-top: clamp(28px, 4vw, 44px); }
 .more-h { font: 800 clamp(1.3rem, 2vw, 1.6rem)/1.1 var(--display); margin-bottom: 14px; }
-.more-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.more-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: start; }
 @media (max-width: 1000px) { .more-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .more-list { grid-template-columns: 1fr; gap: 10px; } }
-.more-card { height: 100%; display: grid; gap: 4px; align-content: start; padding: 12px 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); text-decoration: none; }
+.more-card { display: grid; gap: 4px; align-content: start; padding: 12px 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); text-decoration: none; }
 a.more-card:hover { background: var(--surface-2); }
 .more-k { font-size: .8rem; font-weight: 700; color: var(--teal-text); }
 .more-card b { font: 800 1.08rem/1.2 var(--display); letter-spacing: -.01em; }
 .more-sum { font-size: .88rem; line-height: 1.4; color: var(--sub); }
 .more-go { font-size: .86rem; font-weight: 700; color: var(--teal-text); text-underline-offset: 3px; justify-self: start; margin-top: 2px; }
 a.more-card .more-go { text-decoration: underline; }
-.more-shots summary { cursor: pointer; font-size: .86rem; font-weight: 700; min-height: 32px; display: flex; align-items: center; }
+.more-shots summary { cursor: pointer; font-size: .86rem; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; padding: 6px 12px; border: 2px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--fg); list-style: none; box-shadow: 2px 2px 0 var(--shc); }
+.more-shots summary::-webkit-details-marker { display: none; }
+.more-shots summary::after { content: "\25B8"; transition: transform .2s; }
+.more-shots[open] summary::after { transform: rotate(90deg); }
+.more-shots summary:hover { background: var(--fg); color: var(--bg); }
 .more-shots[open] summary { margin-bottom: 10px; }
 @media (min-width: 1001px) { .more-shots[open] { grid-column: 1 / -1; } }
 li.more-wide:has(.more-shots[open]) { grid-column: 1 / -1; }
@@ -566,6 +589,8 @@ li.more-wide:has(.more-shots[open]) { grid-column: 1 / -1; }
 .scene-cap a { font-weight: 700; color: var(--teal-text); text-underline-offset: 3px; display: inline-flex; align-items: center; min-height: 32px; }
 .facts .ev { background: var(--surface-2); }
 .facts .ev dt { color: var(--fg); }
+.facts .chg { border-left: 6px dashed var(--teal); padding-left: 10px; }
+.facts .chg dt { color: var(--fg); }
 .contact .reply { color: var(--fg); }
 
 /* ---------- Reveal ---------- */
@@ -583,7 +608,8 @@ li.more-wide:has(.more-shots[open]) { grid-column: 1 / -1; }
 .layer.l2 { background: color-mix(in srgb, var(--teal) 18%, var(--surface)); }
 .layer.l3 { background: var(--surface-2); }
 .layer-name { position: absolute; left: 10px; bottom: 6px; font-weight: 700; font-size: .7rem; color: var(--fg); }
-.layer-icons { display: flex; gap: 22px; transform-style: preserve-3d; margin-top: -10px; }
+/* Los iconos se desplazan hacia el fondo y a la derecha de la capa para no tapar su etiqueta (abajo a la izquierda). */
+.layer-icons { display: flex; gap: 22px; transform-style: preserve-3d; transform: translate(14%, -26px); }
 /* Cada icono se «pone de pie» frente a la cámara (deshace la rotación del conjunto). */
 .s-tile { display: grid; justify-items: center; gap: 4px; transform-origin: 50% 100%; transform: rotateZ(36deg) rotateX(-56deg); }
 .s-ico { width: 44px; height: 44px; display: grid; place-items: center; border: 2px solid var(--line); border-radius: 12px; background: #FFFFFF; overflow: hidden; box-shadow: 3px 3px 0 var(--shc); }
@@ -597,7 +623,19 @@ li.more-wide:has(.more-shots[open]) { grid-column: 1 / -1; }
 /* El aviso de puntero solo tiene sentido con un puntero fino que pueda pasar por encima. */
 @media (hover: none), (pointer: coarse), (pointer: none) { .scene-hint { display: none; } }
 @media (max-width: 980px) { .scene { height: 300px; max-width: 520px; width: 100%; margin: 0 auto; overflow: hidden; } }
-@media (max-width: 420px) { .scene { height: 280px; } .rig { width: 70%; transform: translate(-50%, -36%) rotateX(calc(56deg + var(--rx))) rotateZ(calc(-36deg + var(--ry))); } .s-ico { width: 40px; height: 40px; } .layer-icons { gap: 12px; } .s-name { display: none; } }
+/* Por debajo de 768 px la escena pasa a una versión 2D apilada: cuatro filas legibles (capa arriba, iconos con su nombre debajo), sin giro. */
+@media (max-width: 767px) {
+  .scene { height: auto; perspective: none; max-width: none; overflow: visible; }
+  .scene .rig { position: static; width: auto; aspect-ratio: auto; transform: none; transform-style: flat; display: grid; gap: 12px; }
+  .scene .layer { position: relative; top: auto; height: auto; transform: none; transform-style: flat; transition: none; display: grid; gap: 8px; place-items: start; padding: 10px 12px; border-radius: 12px; }
+  .scene .layer + .layer::before { content: ""; position: absolute; left: 26px; top: -14px; width: 3px; height: 14px; background: var(--fg); }
+  .layer-name { position: static; }
+  .layer-icons { margin: 0; gap: 8px 16px; flex-wrap: wrap; transform-style: flat; transform: none; }
+  .s-tile { transform: none; grid-auto-flow: column; align-items: center; gap: 6px; }
+  .s-ico { width: 32px; height: 32px; border-radius: 9px; box-shadow: 2px 2px 0 var(--shc); }
+  .s-name { display: block; max-width: none; text-align: left; }
+  .scene .beam, .scene-hint { display: none; }
+}
 
 /* ---------- Tarjetas con inclinación (fx.ts añade --tx/--ty solo con puntero fino y sin reduced-motion) ---------- */
 [data-tilt] { transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
@@ -618,8 +656,16 @@ li.more-wide:has(.more-shots[open]) { grid-column: 1 / -1; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .js .reveal { opacity: 1; transform: none; }
   .shot, .case.flip .shot, .metric, .hero h1 .hl, .hero h1 .hl.p { transform: none; }
-  .btn:hover, .proofs a:hover, .thumb:hover { transform: none; }
+  .btn:hover, a.proof:hover, .thumb:hover { transform: none; }
   .scene .rig { --rx: 0deg !important; --ry: 0deg !important; }
   .scene:hover .layer { --gap: var(--gap0); }
   .scene .beam { display: none; }
+}
+
+/* Página de decisiones en móvil: tarjetas plegadas más compactas. */
+@media (max-width: 640px) {
+  .dec-page .dec-grid { gap: 16px; }
+  .dec-fold { padding: 14px 16px 6px; gap: 8px; }
+  .dec-fold .dec-flow .dec-key { margin-inline: -16px; padding-right: 16px; }
+  .dec-toc a { padding: 8px 0; }
 }

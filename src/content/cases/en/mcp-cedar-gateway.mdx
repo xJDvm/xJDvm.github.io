@@ -24,13 +24,14 @@ footprint:
   - { value: '78', label: 'agent test cases' }
 color: teal
 evidence: "78 test cases for the agent. Measured: the listing the model receives dropped from about 198,000 to 611 characters, and empty responses went from 2 in 6 invocations to 1 in 22."
+change: "I’d ask for real pagination in the source API. Today it ignores the page parameters, so the Lambda receives the full catalog and trims it in memory; that’s accepted because the limit that matters is the model’s context, but it’s work the Lambda shouldn’t have to do."
 home:
   summary: "An assistant in Google Chat that looks up and logs work hours in the consultancy’s internal tool, in plain Spanish."
   problem: "Giving an AI access to a real tool opens the door to accidental or repeated changes."
   result: "The assistant can only perform 10 allowed actions, none of them deletes, asks for confirmation before changing anything and never logs the same thing twice."
   decision: "Put it behind a policy that denies everything by default: 10 allowed actions, none that delete, and confirmation before changing anything."
   tags: ["AI", "Security", "Automation"]
-  sticker: {"value": "0", "label": "delete actions allowed"}
+  sticker: {"value": "2/6 → 1/22", "label": "empty replies from the assistant, before and after measuring and fixing"}
 ---
 
 ## Context
