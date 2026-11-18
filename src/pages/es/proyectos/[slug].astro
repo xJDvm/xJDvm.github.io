@@ -1,10 +1,11 @@
 ---
 import CaseDetail from '../../../components/CaseDetail.astro';
 import { getAllCases } from '../../../lib/cases';
+import { caseSlug } from '../../../i18n';
 
 export async function getStaticPaths() {
   const cases = await getAllCases('es');
-  return cases.map((entry) => ({ params: { slug: entry.data.key }, props: { entry } }));
+  return cases.map((entry) => ({ params: { slug: caseSlug('es', entry.data.key) }, props: { entry } }));
 }
 const { entry } = Astro.props;
 ---

@@ -39,14 +39,6 @@ El reto no era que el modelo entendiera la frase, sino **qué le dejamos hacer**
 
 ## Arquitectura
 
-```text
-Usuario → Google Chat → Lambda receptora (verifica JWT, deduplica)
-        → AgentCore Runtime (agente Python/Strands)
-        → AgentCore Gateway (MCP / JSON-RPC, AWS_IAM + política Cedar)
-        → 10 Lambdas adaptadoras (Node 22, OpenAPI 3.1)
-        → API de la herramienta de horas
-```
-
 - **Política Cedar default-deny:** una sola sentencia `permit` con las 10 acciones permitidas. No existe ninguna de borrado. Cuando una política deniega algo, el agente recibe un error JSON-RPC `-32002`, no un silencio.
 - **Idempotencia en DynamoDB** (con SSE, PITR y TTL): repetir la misma mutación no crea dos registros.
 - **Confirmación antes de mutar:** el agente propone y el usuario confirma.

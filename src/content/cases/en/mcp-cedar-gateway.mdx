@@ -39,14 +39,6 @@ The challenge wasn’t getting the model to understand the sentence. It was deci
 
 ## Architecture
 
-```text
-User → Google Chat → receiver Lambda (verifies JWT, deduplicates)
-     → AgentCore Runtime (Python/Strands agent)
-     → AgentCore Gateway (MCP / JSON-RPC, AWS_IAM + Cedar policy)
-     → 10 adapter Lambdas (Node 22, OpenAPI 3.1)
-     → time-tracking API
-```
-
 - **Default-deny Cedar policy:** a single `permit` statement listing the 10 allowed actions, with no delete operation at all. When a policy denies something, the agent gets a JSON-RPC `-32002` error, not silence.
 - **Idempotency in DynamoDB** (with SSE, PITR and TTL): repeating the same mutation doesn’t create two records.
 - **Confirmation before mutating:** the agent proposes and the user confirms.

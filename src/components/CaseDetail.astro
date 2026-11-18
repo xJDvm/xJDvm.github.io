@@ -4,6 +4,10 @@ import Base from '../layouts/Base.astro';
 import CaseArt from './CaseArt.astro';
 import Metrics from './Metrics.astro';
 import DecisionCard from './DecisionCard.astro';
+import Flow from './Flow.astro';
+import Screenshot from './Screenshot.astro';
+import { flows } from '../lib/flows';
+import { shots } from '../lib/shots';
 import { decisions } from '../i18n/decisions';
 import { dict, paths, EMAIL, type Lang } from '../i18n';
 import { getAllCases, blockClass, type Case } from '../lib/cases';
@@ -22,6 +26,8 @@ const back = d.kind === 'case' ? `${paths.home(lang)}#trabajo` : `${paths.home(l
 const alternates = { es: paths.case('es', d.key), en: paths.case('en', d.key) };
 const title = `${d.title} — Juan Diego Valdés M.`;
 const caseDecisions = decisions[lang].filter((x) => x.case === d.key);
+const arch = flows[lang][d.key]?.arch;
+const shot = shots[d.key]?.detail;
 ---
 <Base lang={lang} title={title} description={d.summary} alternates={alternates} ogType="article">
   <article aria-labelledby="case-title">
@@ -42,6 +48,12 @@ const caseDecisions = decisions[lang].filter((x) => x.case === d.key);
 
     <div class="wrap prose-wrap">
       <div class="prose-col">
+        {(arch || shot) && (
+          <div class="case-visuals">
+            {arch && <Flow steps={arch} caption={t.flowArch} label={`${t.flowArch}: ${d.title}`} class="flow-arch" />}
+            {shot && <Screenshot src={shot.src} alt={shot.alt[lang]} url={shot.url} caption={shot.caption[lang]} sizes="(max-width: 900px) 92vw, 720px" />}
+          </div>
+        )}
         {caseDecisions.length > 0 && (
           <section class="case-decs" aria-labelledby="case-decs-h">
             <h2 id="case-decs-h">{t.dec.caseH}</h2>

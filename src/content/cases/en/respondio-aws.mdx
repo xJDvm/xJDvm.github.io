@@ -37,20 +37,6 @@ Respond.io is the messaging platform for the client’s B2B sales channel. Its w
 
 ## The architecture
 
-```text
-Respond.io (webhooks)
-  → API Gateway (IP allowlist + API key)
-  → SNS (entry topic)
-      ├─ filter event_type = message.received → SQS → Lambda: store message
-      ├─ filter event_type = message.received → SQS → Lambda: keywords
-      ├─ filter contact.*                     → SQS → Lambda: contacts
-      ├─ filter conversation.*                → SQS → Lambda: conversations
-      └─ …                                    → 19 queues in total
-  → Aurora PostgreSQL 16 (in a VPC, credentials in Secrets Manager)
-
-EventBridge bus · daily scheduled job (cron 03:00) · S3 → SQS (SAP files)
-```
-
 - **One topic, many queues.** SNS filters on `event_type` and each process has its own queue and Lambda. If one process fails or falls behind, the others keep going.
 - **Relational persistence.** Aurora PostgreSQL 16 in a cluster inside the VPC, with its own parameter and subnet groups. Credentials live in Secrets Manager and configuration in Parameter Store.
 - **Inputs that aren’t webhooks.** Files landing in S3, such as offers and quotes exported from SAP, become queue messages. A scheduled job checks pending messages every night.
@@ -70,6 +56,6 @@ I was the repository’s top contributor for a year and a half, within a team. A
 
 ## The same pattern in the contact center
 
-The same client’s contact center backend follows the same architecture: 16 Lambdas and 12 queues, with SNS filters by event type. There I added audio transcription with AWS Transcribe, a satisfaction survey and email alerts for pending messages. I also deployed Respond.io’s MCP server on ECS. That server is Respond.io’s open-source project: I deployed and ran it, I didn’t write it.
+The same client’s contact center backend follows the same architecture: 16 Lambdas and 12 queues, with SNS filters by event type. There I added audio transcription with AWS Transcribe, a satisfaction survey and email alerts for pending messages. I also set up Respond.io’s MCP server on ECS. That server is Respond.io’s open-source project: I configured and integrated it, I didn’t write it.
 
 > Code, schemas and identifiers belong to the client. Here I describe the pattern, without data.

@@ -1,0 +1,64 @@
+---
+key: clinic
+lang: es
+order: 4
+title: Atención automatizada para una clínica
+short: Clínica
+label: 04 — Salud
+period: oct — nov 2026
+summary: Atención a pacientes por Messenger e Instagram con IA, una suite web interna y una memoria compartida de pacientes para los directores médicos.
+problem: Una clínica que atiende por redes sociales necesita responder rápido sin que la IA conteste lo que no le corresponde, sin duplicar respuestas cuando llegan ráfagas de mensajes y con traspaso a una persona cuando hace falta.
+decision: Diseño por eventos con garantías explícitas. El ingreso verifica la firma HMAC y solo responde 200 cuando SQS confirmó. Hay una cola FIFO por paciente, idempotencia en base de datos, un debounce de 4 s para ráfagas y una «puerta clínica» antes de que conteste la IA.
+role: "Autor único de los cuatro repositorios: contact center, suite, memoria de pacientes e inventario."
+result: Atención de punta a punta para pacientes por Messenger e Instagram, con traspaso a personal, base de conocimiento administrable, auditoría, métricas y un monitor de pacientes para los directores médicos.
+stack: [Node 20 (ESM), PostgreSQL, React, Vite, AWS SAM, Lambda, API Gateway, SQS FIFO, Aurora, Meta Graph API, MCP, OpenAI, Gemini, Docker Compose]
+sticker: { value: '4 s', label: 'de espera para agrupar ráfagas de mensajes' }
+tag: salud
+footprint:
+  - { value: '146', label: 'commits en 5 repos: 64 + 37 + 35 + 2 + 8 del paraguas (autor único)' }
+  - { value: '21', label: 'migraciones SQL' }
+  - { value: '29', label: 'tablas (10 + 9 + 10)' }
+  - { value: '16', label: 'herramientas MCP en el contact center' }
+  - { value: '176', label: 'casos de prueba en la variante AWS (90 + 86)' }
+color: red
+home:
+  title: "Atención automatizada para una clínica"
+  summary: "Pacientes atendidos por Messenger e Instagram con IA, una aplicación interna para el equipo y una memoria de pacientes para los directores médicos."
+  problem: "La clínica atiende por redes sociales y necesitaba responder rápido, sin que la IA contestara lo que no le corresponde ni repitiera respuestas."
+  result: "Responde rápido, pasa a una persona cuando hace falta y nunca contesta dos veces. Lo diseñé para que el costo fuera razonable para el tamaño de la clínica."
+  tags: ["Salud", "IA", "Producto"]
+  sticker: {"value": "2", "label": "canales: Messenger e Instagram"}
+---
+
+## Contexto
+
+Para una clínica construí tres productos que comparten base:
+
+- **Contact center:** atención por Messenger e Instagram con IA, base de conocimiento y traspaso a personal humano.
+- **Suite:** la aplicación web interna, con usuarios, roles, sesiones, auditoría, métricas y base de conocimiento administrable.
+- **Memoria de pacientes:** para los directores médicos, con Google Drive como fuente, proveedores de IA intercambiables (OpenAI o Gemini) y un monitor con línea de tiempo, laboratorios, signos vitales y alertas, diseñado y probado con datos sintéticos.
+
+Cada producto tiene dos variantes: `local/`, con Docker Compose, y `aws/`, con una plantilla SAM.
+
+## Las garantías del contact center
+
+- **Nunca perder un mensaje:** el webhook solo confirma a Meta cuando el mensaje está en la cola.
+- **Nunca responder dos veces:** idempotencia y un candado por conversación con vencimiento.
+- **No responder a medias:** si la persona sigue escribiendo, el debounce espera y el responder comprueba que no haya un mensaje más nuevo.
+- **Puerta clínica:** un filtro explícito, en código, antes de que la IA conteste.
+
+Node 20 con ESM y `node:http`, sin frameworks. La suite usa cookies HttpOnly y SameSite=Strict con CSRF de doble envío.
+
+## Costo y disponibilidad, por escrito
+
+- **Serverless frente a un solo servidor.** Comparé un servidor único (Lightsail), EC2, DigitalOcean, Hetzner, Azure y AWS por servicios. Elegí AWS serverless por disponibilidad: cuesta unos USD 25 más al mes que el servidor único (estimado, precio de lista), casi todo por el mínimo de Aurora, pero no hay un servidor que pueda tumbarlo todo. La base y la cola van detrás de adaptadores para no quedar atado al proveedor.
+- **Techo de costo en Aurora:** mínimo de 0,5 ACU sin pausa y máximo de 2 ACU con alarma. El entorno de pruebas se pausa a los 10 minutos.
+- **Retención de 30 días** para el texto de las conversaciones, con purga programada. Menos datos de salud expuestos, a cambio de perder el detalle histórico.
+
+## Verificación
+
+Casos de prueba en cada producto, modos de fallo documentados, modelo de costos, notas de seguridad clínica y scripts que comprueban que no queden datos de demo.
+
+## Lo que aprendí
+
+En salud, lo difícil no es que la IA conteste sino decidir **cuándo no debe hacerlo**, y que esa decisión quede en código verificable y no en un prompt.

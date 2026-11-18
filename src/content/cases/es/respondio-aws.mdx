@@ -37,20 +37,6 @@ Respond.io es la plataforma de mensajería del canal de ventas a empresas del cl
 
 ## La arquitectura
 
-```text
-Respond.io (webhooks)
-  → API Gateway (lista de IPs permitidas + API key)
-  → SNS (tópico de entrada)
-      ├─ filtro event_type = message.received → SQS → Lambda: guardar mensaje
-      ├─ filtro event_type = message.received → SQS → Lambda: palabras clave
-      ├─ filtro contact.*                     → SQS → Lambda: contactos
-      ├─ filtro conversation.*                → SQS → Lambda: conversaciones
-      └─ …                                    → 19 colas en total
-  → Aurora PostgreSQL 16 (en VPC, credenciales en Secrets Manager)
-
-Bus de EventBridge · tarea programada diaria (cron 03:00) · S3 → SQS (archivos de SAP)
-```
-
 - **Un tópico, muchas colas.** SNS filtra por `event_type` y cada proceso tiene su cola y su Lambda. Si un proceso falla o se atrasa, los demás siguen.
 - **Persistencia relacional.** Aurora PostgreSQL 16 en un clúster dentro de la VPC, con grupo de parámetros y de subredes propios. Las credenciales viven en Secrets Manager y la configuración en Parameter Store.
 - **Entradas que no son webhooks.** Archivos que llegan a S3, como las ofertas y cotizaciones exportadas de SAP, se convierten en mensajes de cola. Una tarea programada revisa cada madrugada los mensajes pendientes.
@@ -70,6 +56,6 @@ Fui el mayor contribuyente del repositorio durante año y medio, dentro de un eq
 
 ## El mismo patrón en el contact center
 
-El backend del contact center del mismo cliente sigue la misma arquitectura: 16 Lambdas y 12 colas, con filtros de SNS por tipo de evento. Ahí añadí la transcripción de audios con AWS Transcribe, una encuesta de satisfacción y avisos por email de mensajes pendientes. También desplegué en ECS el servidor MCP de Respond.io, que es *open source* de Respond.io: yo lo desplegué y lo operé, no lo escribí.
+El backend del contact center del mismo cliente sigue la misma arquitectura: 16 Lambdas y 12 colas, con filtros de SNS por tipo de evento. Ahí añadí la transcripción de audios con AWS Transcribe, una encuesta de satisfacción y avisos por email de mensajes pendientes. También monté en ECS el servidor MCP de Respond.io, que es *open source* de Respond.io: lo configuré e integré, no lo escribí.
 
 > Código, esquemas e identificadores son del cliente. Aquí describo el patrón, sin datos.

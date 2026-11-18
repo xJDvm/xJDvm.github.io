@@ -1,0 +1,18 @@
+---
+/* Icono de Lucide (licencia ISC), empaquetado en el build desde lucide-static: SVG en línea, sin CDN.
+   Decorativo por defecto (aria-hidden); con `label` se expone como imagen con nombre accesible. */
+import * as icons from 'lucide-static';
+
+interface Props { name: string; size?: number; class?: string; label?: string; }
+const { name, size = 24, class: cls = '', label } = Astro.props;
+const raw = (icons as unknown as Record<string, string>)[name];
+if (!raw) throw new Error(`Icono de Lucide desconocido: ${name}`);
+const a11y = label ? `role="img" aria-label="${label.replace(/"/g, '&quot;')}"` : 'aria-hidden="true"';
+const svg = raw
+  .replace(/\sclass="[^"]*"/, '')
+  .replace(/\swidth="\d+"/, ` width="${size}"`)
+  .replace(/\sheight="\d+"/, ` height="${size}"`)
+  .replace('<svg', `<svg class="ico ${cls}" focusable="false" ${a11y}`)
+  .replace(/\n\s*/g, ' ');
+---
+<Fragment set:html={svg} />

@@ -2,6 +2,11 @@
 import { render } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import ApiConsole from './ApiConsole';
+import Icon from './Icon.astro';
+import Flow from './Flow.astro';
+import Screenshot from './Screenshot.astro';
+import { flows } from '../lib/flows';
+import { shots } from '../lib/shots';
 import { dict, paths, EMAIL, GITHUB, LINKEDIN, type Lang, type ConsoleEndpoint } from '../i18n';
 import { getCases, getSide, blockClass } from '../lib/cases';
 
@@ -16,13 +21,20 @@ const es = lang === 'es';
 const endpoints: ConsoleEndpoint[] = [
   {
     id: 'cases', method: 'GET', path: es ? '/casos' : '/cases', status: 200, sql: es ? 'lee' : 'read', ui: 'list',
-    body: { total: cases.length, items: cases.map((c) => ({ name: c.data.home?.title ?? c.data.short, type: (c.data.home?.tags ?? []).slice(0, 2).join(' · '), status: c.data.home?.tags[0] ?? c.data.tag })) },
+    body: {
+      total: cases.length,
+      items: cases.map((c) => ({
+        name: c.data.home?.title ?? c.data.short,
+        category: c.data.home?.tags[0] ?? c.data.tag,
+        year: Number(c.data.period.match(/\d{4}(?!.*\d{4})/)?.[0] ?? 0),
+      })),
+    },
   },
   {
     id: 'availability', method: 'GET', path: es ? '/disponibilidad' : '/availability', status: 200, sql: es ? 'lee' : 'read', ui: 'availability',
     body: es
-      ? { disponible: true, empleo: 'full-stack', freelance: true, enfoque: ['IA', 'cloud'], experiencia_anios: 4, experiencia_ia_anios: 2.5, nexus_challenge: 'ganador', ubicacion: 'Valencia, VE', zona: 'GMT-4' }
-      : { available: true, role: 'full-stack', freelance: true, focus: ['AI', 'cloud'], experience_years: 4, ai_experience_years: 2.5, nexus_challenge: 'winner', location: 'Valencia, VE', timezone: 'GMT-4' },
+      ? { disponible: true, empleo: 'full-stack', freelance: true, enfoque: ['IA', 'cloud'], experiencia_anios: 4, nexus_challenge: 'ganador', ubicacion: 'Valencia, VE', zona: 'GMT-4' }
+      : { available: true, role: 'full-stack', freelance: true, focus: ['AI', 'cloud'], experience_years: 4, nexus_challenge: 'winner', location: 'Valencia, VE', timezone: 'GMT-4' },
   },
   {
     id: 'contact', method: 'POST', path: es ? '/contacto' : '/contact', status: 201, sql: 'INSERT', ui: 'contact',
@@ -68,12 +80,11 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
     <div class="wrap think-grid">
       {t.think.items.map((it, i) => (
         <article class="think reveal" aria-labelledby={`think-${i}`}>
-          <p class="think-n mono" aria-hidden="true">0{i + 1}</p>
+          <div class="think-top"><span class="think-ico"><Icon name={it.icon} size={26} /></span><p class="think-n mono" aria-hidden="true">0{i + 1}</p></div>
           <h3 id={`think-${i}`}>{it.h}</h3>
           <dl>
             <div><dt>{t.think.labels.problem}</dt><dd>{it.problem}</dd></div>
             <div class="key"><dt>{t.think.labels.choice}</dt><dd>{it.choice}</dd></div>
-            <div><dt>{t.think.labels.why}</dt><dd>{it.why}</dd></div>
           </dl>
           <a class="think-link mono" href={paths.case(lang, it.case)}>{t.think.readCase}<span class="sr-only">: {it.h}</span> →</a>
         </article>
@@ -92,6 +103,8 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
       const d = c.data;
       const h = d.home ?? { title: d.title, summary: d.summary, problem: d.problem, result: d.result, tags: d.stack.slice(0, 3), sticker: d.sticker };
       const light = d.color === 'teal' || d.color === 'invert';
+      const flow = flows[lang][d.key]?.home;
+      const shot = shots[d.key]?.home;
       return (
         <article class={`case ${blockClass(d.color)}${i % 2 ? ' flip' : ''}`} aria-labelledby={`case-${d.key}`}>
           <div class="wrap">
@@ -100,7 +113,6 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
               <h3 id={`case-${d.key}`}>{h.title}</h3>
               <p class="sum">{h.summary}</p>
               <dl class="facts">
-                <div><dt>{t.facts.problem}</dt><dd>{h.problem}</dd></div>
                 <div class="res"><dt>{t.facts.achieved}</dt><dd>{h.result}</dd></div>
               </dl>
               <ul class="chips" aria-label={t.facts.areas}>{h.tags.map((s) => <li>{s}</li>)}</ul>
@@ -109,10 +121,13 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
               </a>
             </div>
             <div class="vis reveal">
-              <div class="shot plain">
-                <span class="mono">{d.label}</span>
-                <b>{h.sticker.value}</b>
-                <span class="plain-l">{h.sticker.label}</span>
+              <div class="shot viz">
+                {shot ? (
+                  <Screenshot src={shot.src} alt={shot.alt[lang]} url={shot.url} caption={shot.caption[lang]} />
+                ) : flow ? (
+                  <Flow steps={flow} caption={t.flowHome} label={`${t.flowHome}: ${h.title}`} />
+                ) : null}
+                <p class="viz-stat"><b>{h.sticker.value}</b><span>{h.sticker.label}</span></p>
               </div>
             </div>
           </div>
@@ -256,7 +271,11 @@ const alternates = { es: paths.home('es'), en: paths.home('en') };
         <div class="tools">
           <h3>{t.toolsH}</h3>
           <p>{t.toolsP}</p>
-          <ul>{t.tools.map((x) => <li>{x}</li>)}</ul>
+          <ul class="kit">
+            {t.tools.map((x) => (
+              <li><span class="kit-ico"><Icon name={x.icon} size={22} /></span><b>{x.h}</b><span>{x.p}</span></li>
+            ))}
+          </ul>
         </div>
       </div>
       <dl class="tl reveal" aria-label={t.aboutFactsLabel}>

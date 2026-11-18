@@ -33,13 +33,13 @@ function Render({ ep, copy, email }: { ep: ConsoleEndpoint; copy: ConsoleCopy; e
   if (ep.ui === 'list') {
     return (
       <>
-        {(b.items as { name: string; type: string; status: string }[]).map((p) => (
+        {(b.items as { name: string; category: string; year: number }[]).map((p) => (
           <div class="row" key={p.name}>
-            <div>
-              <b>{p.name}</b>
-              <div class="mono">{p.type}</div>
-            </div>
-            <span class="tag">{p.status}</span>
+            <b>{p.name}</b>
+            <span class="row-meta">
+              <span class="tag">{p.category}</span>
+              <span class="mono">{p.year}</span>
+            </span>
           </div>
         ))}
       </>

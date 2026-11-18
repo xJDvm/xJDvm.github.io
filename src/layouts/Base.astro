@@ -74,8 +74,9 @@ const home = paths.home(lang);
         </nav>
         <div class="nav-end">
           <nav class="lang" aria-label={t.langLabel}>
-            <a href={alternates.es} hreflang="es" lang="es" aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
-            <a href={alternates.en} hreflang="en" lang="en" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+            {(['es', 'en'] as const).map((l) => l === lang
+              ? <span class="lang-on" lang={l} aria-current="page" aria-disabled="true" title={t.langCurrent}>{l.toUpperCase()}</span>
+              : <a href={alternates[l]} hreflang={l} lang={l}>{l.toUpperCase()}</a>)}
           </nav>
           <button class="theme-toggle" type="button" id="theme-toggle" data-label-dark={t.themeToDark} data-label-light={t.themeToLight} aria-label={t.themeToDark} hidden>
             <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" /></svg>

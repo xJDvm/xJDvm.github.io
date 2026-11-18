@@ -30,7 +30,7 @@ const H = level;
   {d.code && (
     <figure class="dec-code">
       <figcaption class="mono">{d.code.label}</figcaption>
-      <pre><code>{d.code.src}</code></pre>
+      <pre tabindex="0"><code>{d.code.src}</code></pre>
     </figure>
   )}
   {link && d.case && <a class="dec-link mono" href={paths.case(lang, d.case)}>{t.readCase} →</a>}

@@ -1,0 +1,21 @@
+---
+/* Diagrama de flujo accesible: una lista ordenada de pasos con icono, unidos por conectores dibujados en CSS.
+   Los colores salen de variables de tema, así que funciona en claro, oscuro y bloques invertidos. */
+import Icon from './Icon.astro';
+import type { FlowStep } from '../lib/flows';
+
+interface Props { steps: FlowStep[]; caption: string; label: string; class?: string; }
+const { steps, caption, label, class: cls = '' } = Astro.props;
+const half = Math.ceil(steps.length / 2);
+---
+<figure class={`flow ${cls}`}>
+  <figcaption class="flow-cap mono">{caption}</figcaption>
+  <ol class="flow-list" aria-label={label} style={`--rows:${half}`}>
+    {steps.map((s, i) => (
+      <li class={`fn${s.tone ? ` t-${s.tone}` : ''}${i === half - 1 ? ' fn-colend' : ''}`}>
+        <span class="fn-ico"><Icon name={s.icon} size={20} /></span>
+        <span class="fn-txt"><b>{s.label}</b>{s.sub && <small>{s.sub}</small>}</span>
+      </li>
+    ))}
+  </ol>
+</figure>

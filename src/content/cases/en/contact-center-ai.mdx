@@ -25,8 +25,8 @@ color: wine
 home:
   title: "AI assistants for customer service"
   summary: "Three assistants handling sales, reception and support over WhatsApp and web for a retail chain in Latin America."
-  problem: "The assistants were spread across two platforms, and any manual change could break service for real customers."
-  result: "Changes are now tested before going live and move between environments under control. The sales assistant was migrated to a new platform without interrupting service, and frequent questions are answered instantly without spending AI."
+  problem: "The assistants were spread across two platforms, and any manual change could break customer service."
+  result: "Changes are now tested before they are published and move between environments under control. The sales assistant was migrated to a new platform without interrupting service, and frequent questions are answered instantly without spending AI."
   tags: ["AI", "Customer service", "Cloud"]
   sticker: {"value": "3", "label": "assistants: sales, reception and support"}
 ---
@@ -48,7 +48,7 @@ That’s how improvements were promoted, such as the web greeting, timeout recov
 
 ## Part 2: migrating to Bedrock AgentCore
 
-The sales agent moved from n8n + Respond.io to **Amazon Bedrock AgentCore** with **Strands Agents**, in parallel and without touching live operations.
+The sales agent moved from n8n + Respond.io to **Amazon Bedrock AgentCore** with **Strands Agents**, in parallel and without touching the current operation.
 
 1. Respond.io sends a webhook to API Gateway, restricted by IP and VPC.
 2. SNS and SQS, with a dead-letter queue, decouple the intake.

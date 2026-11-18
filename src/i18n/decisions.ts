@@ -33,7 +33,7 @@ if (!row.last_seen_at || ts - row.last_seen_at > PRESENCE_WRITE_INTERVAL) {
 export const decisions: Record<Lang, Decision[]> = {
   es: [
     {
-      id: 'data-api', case: 'cdlf', tags: ['Costo', 'Seguridad'], where: 'CDLF · contact center en AWS',
+      id: 'data-api', case: 'clinic', tags: ['Costo', 'Seguridad'], where: 'Clínica · contact center en AWS',
       h: 'Sacar las Lambdas de la VPC sin exponer la base',
       problem: 'Una Lambda que habla con PostgreSQL suele ir dentro de la VPC, y eso obliga a pagar NAT Gateway para salir a Meta y OpenAI y RDS Proxy para el pool de conexiones.',
       options: 'Lambdas en VPC con NAT y RDS Proxy · un servidor único con PostgreSQL local · Aurora con Data API.',
@@ -43,7 +43,7 @@ export const decisions: Record<Lang, Decision[]> = {
       figure: { kind: 'estimate', value: 'NAT ≈ USD 33/mes y RDS Proxy ≈ USD 88/mes que no se contratan · HTTP API USD 1 frente a USD 3,50 por millón de peticiones' },
     },
     {
-      id: 'model-cost', case: 'cdlf', tags: ['Costo', 'Calidad'], where: 'CDLF · IA conversacional',
+      id: 'model-cost', case: 'clinic', tags: ['Costo', 'Calidad'], where: 'Clínica · IA conversacional',
       h: 'Elegir el modelo por factura y por calidad',
       problem: 'En el contact center, lo que mueve la factura es la IA, no la infraestructura.',
       options: 'Nova Micro, Nova Lite, gpt-5-nano, Gemini 2.5 Flash-Lite y gpt-4o-mini, comparados con el mismo supuesto de tokens por chat.',
@@ -53,7 +53,7 @@ export const decisions: Record<Lang, Decision[]> = {
       figure: { kind: 'estimate', value: 'Entre USD 3,76 y 16,13 al mes según el modelo, con el volumen actual y el supuesto de tokens documentado' },
     },
     {
-      id: 'debounce', case: 'cdlf', tags: ['Latencia', 'Corrección'], where: 'CDLF · mensajería por eventos',
+      id: 'debounce', case: 'clinic', tags: ['Latencia', 'Corrección'], where: 'Clínica · mensajería por eventos',
       h: 'Agrupar ráfagas cuando la cola no lo permite',
       problem: 'Los pacientes escriben en ráfagas y hay que contestar una sola vez y en orden. Un spike demostró que el plan original no funcionaba: SQS FIFO no admite retraso por mensaje y Lambda no acepta ventana de lote con colas FIFO.',
       options: 'Retraso de 3 a 5 s en la cola (plan original) · ventana de lote en Lambda · debounce en dos etapas.',
@@ -80,7 +80,7 @@ export const decisions: Record<Lang, Decision[]> = {
       figure: { kind: 'measured', value: '≈198.000 → 611 caracteres por listado · respuestas vacías de 2/6 a 1/22' },
     },
     {
-      id: 'free-tier', tags: ['Costo', 'Tiempo real'], where: 'App colaborativa en tiempo real · Cloudflare',
+      id: 'free-tier', tags: ['Costo', 'Tiempo real'], where: 'Friends Monitor · Cloudflare',
       h: 'Diseñar para el plan gratuito desde el principio',
       problem: 'Una app en tiempo real para un grupo pequeño tenía que funcionar dentro de los límites del plan gratuito de Cloudflare (D1: 100.000 escrituras de fila al día y 50 consultas por petición).',
       decision: 'Un Durable Object por grupo con la WebSocket Hibernation API, en lugar de un polling cada 45 s; los pings se responden sin despertar el objeto. La presencia se escribe como mucho una vez por minuto y usuario, las estadísticas salen en una sola consulta y un cron diario limpia las tablas.',
@@ -108,7 +108,7 @@ export const decisions: Record<Lang, Decision[]> = {
   ],
   en: [
     {
-      id: 'data-api', case: 'cdlf', tags: ['Cost', 'Security'], where: 'CDLF · contact center on AWS',
+      id: 'data-api', case: 'clinic', tags: ['Cost', 'Security'], where: 'Clinic · contact center on AWS',
       h: 'Take the Lambdas out of the VPC without exposing the database',
       problem: 'A Lambda that talks to PostgreSQL usually sits inside the VPC, which means paying for a NAT Gateway to reach Meta and OpenAI, and for RDS Proxy to pool connections.',
       options: 'Lambdas in the VPC with NAT and RDS Proxy · a single server with local PostgreSQL · Aurora with the Data API.',
@@ -118,7 +118,7 @@ export const decisions: Record<Lang, Decision[]> = {
       figure: { kind: 'estimate', value: 'NAT ≈ USD 33/mo and RDS Proxy ≈ USD 88/mo not contracted · HTTP API USD 1 vs USD 3.50 per million requests' },
     },
     {
-      id: 'model-cost', case: 'cdlf', tags: ['Cost', 'Quality'], where: 'CDLF · conversational AI',
+      id: 'model-cost', case: 'clinic', tags: ['Cost', 'Quality'], where: 'Clinic · conversational AI',
       h: 'Pick the model by the bill and by quality',
       problem: 'In the contact center, what drives the bill is the AI, not the infrastructure.',
       options: 'Nova Micro, Nova Lite, gpt-5-nano, Gemini 2.5 Flash-Lite and gpt-4o-mini, compared with the same tokens-per-chat assumption.',
@@ -128,7 +128,7 @@ export const decisions: Record<Lang, Decision[]> = {
       figure: { kind: 'estimate', value: 'Between USD 3.76 and 16.13 a month depending on the model, at current volume and the documented token assumption' },
     },
     {
-      id: 'debounce', case: 'cdlf', tags: ['Latency', 'Correctness'], where: 'CDLF · event-driven messaging',
+      id: 'debounce', case: 'clinic', tags: ['Latency', 'Correctness'], where: 'Clinic · event-driven messaging',
       h: 'Debounce bursts when the queue won’t let you',
       problem: 'Patients write in bursts and must get one answer, in order. A spike proved the original plan didn’t work: SQS FIFO has no per-message delay, and Lambda doesn’t accept a batching window on FIFO queues.',
       options: '3–5 s delay on the queue (original plan) · a Lambda batching window · a two-stage debounce.',
@@ -155,7 +155,7 @@ export const decisions: Record<Lang, Decision[]> = {
       figure: { kind: 'measured', value: '≈198,000 → 611 characters per listing · empty responses from 2/6 to 1/22' },
     },
     {
-      id: 'free-tier', tags: ['Cost', 'Real time'], where: 'Real-time collaborative app · Cloudflare',
+      id: 'free-tier', tags: ['Cost', 'Real time'], where: 'Friends Monitor · Cloudflare',
       h: 'Design for the free plan from day one',
       problem: 'A real-time app for a small group had to fit within Cloudflare’s free plan limits (D1: 100,000 row writes a day and 50 queries per request).',
       decision: 'One Durable Object per group with the WebSocket Hibernation API, replacing a 45 s poll; pings are answered without waking the object. Presence is written at most once per minute per user, stats come from a single query, and a daily cron keeps tables small.',

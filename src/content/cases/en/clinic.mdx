@@ -1,0 +1,64 @@
+---
+key: clinic
+lang: en
+order: 4
+title: Automated patient messaging for a clinic
+short: Clinic
+label: 04 — Healthcare
+period: Oct — Nov 2026
+summary: AI-assisted patient messaging over Messenger and Instagram, an internal web suite, and a shared patient memory for the medical directors.
+problem: A clinic that serves patients over social media needs to reply fast without the AI answering what isn’t its place, without duplicate replies when messages arrive in bursts, and with handoff to a person when needed.
+decision: Event-driven design with explicit guarantees. Intake verifies the HMAC signature and only returns 200 once SQS has confirmed. There is one FIFO queue per patient, idempotency in the database, a 4 s debounce for bursts and a “clinical gate” before the AI replies.
+role: "Sole author of all four repositories: contact center, suite, patient memory and inventory."
+result: End-to-end patient messaging over Messenger and Instagram, with handoff to staff, a manageable knowledge base, auditing, metrics and a patient monitor for the medical directors.
+stack: [Node 20 (ESM), PostgreSQL, React, Vite, AWS SAM, Lambda, API Gateway, SQS FIFO, Aurora, Meta Graph API, MCP, OpenAI, Gemini, Docker Compose]
+sticker: { value: '4 s', label: 'wait to group bursts of messages' }
+tag: health
+footprint:
+  - { value: '146', label: 'commits in 5 repos: 64 + 37 + 35 + 2 + 8 umbrella (sole author)' }
+  - { value: '21', label: 'SQL migrations' }
+  - { value: '29', label: 'tables (10 + 9 + 10)' }
+  - { value: '16', label: 'MCP tools in the contact center' }
+  - { value: '176', label: 'test cases in the AWS variant (90 + 86)' }
+color: red
+home:
+  title: "Automated patient messaging for a clinic"
+  summary: "Patients served over Messenger and Instagram with AI, an internal app for the staff and a patient memory for the medical directors."
+  problem: "The clinic serves patients over social media and needed to answer fast, without the AI answering what isn’t its place or sending duplicate replies."
+  result: "It answers fast, hands off to a person when needed and never replies twice. I designed it so running costs stay sensible for the clinic’s size."
+  tags: ["Health", "AI", "Product"]
+  sticker: {"value": "2", "label": "channels: Messenger and Instagram"}
+---
+
+## Context
+
+For a clinic I built three products on a shared base:
+
+- **Contact center:** AI-assisted messaging over Messenger and Instagram, with a knowledge base and handoff to staff.
+- **Suite:** the internal web app, with users, roles, sessions, auditing, metrics and a manageable knowledge base.
+- **Patient memory:** for the medical directors, sourced from Google Drive, with interchangeable AI providers (OpenAI or Gemini) and a monitor with a timeline, labs, vital signs and alerts, designed and tested with synthetic data.
+
+Each product has two variants: `local/`, on Docker Compose, and `aws/`, with a SAM template.
+
+## The contact center’s guarantees
+
+- **Never lose a message:** the webhook only acknowledges Meta once the message is queued.
+- **Never reply twice:** idempotency plus a per-conversation lock with expiry.
+- **Don’t reply halfway:** if the person keeps typing, the debounce waits and the responder checks there’s no newer message.
+- **Clinical gate:** an explicit filter, in code, before the AI replies.
+
+Node 20 with ESM and `node:http`, no frameworks. The suite uses HttpOnly, SameSite=Strict cookies with double-submit CSRF.
+
+## Cost and availability, in writing
+
+- **Serverless versus a single server.** I compared a single server (Lightsail), EC2, DigitalOcean, Hetzner, Azure and AWS service by service. AWS serverless won on availability: it costs about USD 25 more a month than the single server (estimate, list price), almost all of it Aurora’s minimum, but there’s no single server that can take everything down. The database and the queue sit behind adapters to avoid lock-in.
+- **A cost ceiling on Aurora:** a 0.5 ACU minimum with no pause and a 2 ACU maximum with an alarm. The test environment pauses after 10 minutes.
+- **30-day retention** for conversation text, with a scheduled purge. Less health data exposed, in exchange for losing historical detail.
+
+## Verification
+
+Test cases in every product, documented failure modes, a cost model, clinical-safety notes and scripts that check no demo data is left behind.
+
+## What I learned
+
+In healthcare, the hard part isn’t getting the AI to answer. It’s deciding **when it shouldn’t**, and keeping that decision in verifiable code rather than in a prompt.

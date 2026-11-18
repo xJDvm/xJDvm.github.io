@@ -17,7 +17,7 @@ const alt: Record<string, [string, string]> = {
   'mcp-cedar-gateway': ['Ilustración: el gateway con política Cedar permite operaciones de la allowlist y bloquea el borrado', 'Illustration: the Cedar-policy gateway allows allowlisted operations and blocks delete'],
   'sportapp': ['Ilustración: arquitectura hexagonal con el dominio de reservas en el centro', 'Illustration: hexagonal architecture with the bookings domain at the center'],
   'clinical-inventory-ai': ['Ilustración: una nota en texto libre pasa por un modelo local y sale como parámetros estructurados', 'Illustration: a free-text note goes through a local model and comes out as structured parameters'],
-  'cdlf': ['Ilustración: colas por paciente con debounce de 4 segundos antes de responder', 'Illustration: per-patient queues with a 4-second debounce before replying'],
+  'clinic': ['Ilustración: colas por paciente con debounce de 4 segundos antes de responder', 'Illustration: per-patient queues with a 4-second debounce before replying'],
 };
 const label = (alt[k] ?? ['', ''])[es ? 0 : 1];
 ---
@@ -171,7 +171,7 @@ const label = (alt[k] ?? ['', ''])[es ? 0 : 1];
       </g>
     </g>
   )}
-  {k === 'cdlf' && (
+  {k === 'clinic' && (
     <g font-family={M} font-size="11" font-weight="700">
       <text style={`fill:${TT}`} x="28" y="44" >SQS FIFO · {es ? 'POR PACIENTE' : 'PER PATIENT'}</text>
       {[0, 1, 2].map((r) => (
